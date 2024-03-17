@@ -4,10 +4,9 @@
 #define SAFETY_MARGIN 10
 #define NULL_REQUEST -1
 #define END_OF_BUFFER -2
-int *incoming_requests_buffer, *handled_requests_buffer;
-int incoming_i, handled_i;
-pthread_mutex_t incoming_lock, handled_lock;
-pthread_cond_t incoming_cond, handled_cond;
+int *requests_buffer, buf_i, buf_size, handled_reqs_num;
+pthread_mutex_t lock;
+pthread_cond_t cond;
 
 
 // 
@@ -41,21 +40,29 @@ initialize_buffer(int size, int* buffer)
     }
 }
 
-initialize_buffers(int queue_size, int num_threads)
+init_buffer(int queue_size, int num_threads)
 {
-    incoming_requests_buffer = malloc(queue_size+SAFETY_MARGIN);
-    initialize_buffer(queue_size, incoming_requests_buffer);
-    handled_requests_buffer = malloc(num_threads+SAFETY_MARGIN);
-    initialize_buffer(num_threads, handled_requests_buffer);
+    buf_size = 0;
+    requests_buffer = malloc(queue_size+SAFETY_MARGIN);
+    initialize_buffer(queue_size, requests_buffer);
 }
 
-void worker_routine()
+init_lock()
+{
+    pthread_mutex_init(&lock, NULL);
+    pthread_cond_init(&cond, NULL);
+}
+
+void worker_routine(int queue_size)
 {
     int connfd;
     while (1){
-        connfd = wait_for_request();
+        connfd = pop_buffer(queue_size);
         requestHandle(connfd);
         Close(connfd);
+        pthread_mutex_lock(&lock);
+        handled_reqs_num--;
+        pthread_mutex_unlock(&lock);
     }
 }
 
@@ -64,19 +71,43 @@ int create_worker_threads(int port, int num_threads, int queue_size, char *argv)
     pthread_t *threads;
     for (size_t i = 0; i < num_threads; i++)
     {
-        pthread_create(&threads[i], NULL, worker_routine, argv);
+        pthread_create(&threads[i], NULL, worker_routine, queue_size);
     }
     return 0;
 }
 
-place_in_queue(int connfd, int queue_size)
+void push_buffer(int connfd, int queue_size, void (*sched_func)())
 {
-    pthread_mutex_lock(&incoming_lock);
-    while (incoming_requests_buffer[incoming_i] != NULL_REQUEST) //TODO: FIX THIS. THIS SUPPORTS ONLY 1 READER
+    //only add request if there is room in buffer
+    pthread_mutex_lock(&lock);
+    if (buf_size + handled_reqs_num >= queue_size) 
     {
-        pthread_cond_wait(&incoming_cond, &incoming_lock);
+        sched_func();
+        pthread_cond_signal(&cond);
+        pthread_mutex_unlock(&lock);
+        return;
     }
-    incoming_i = (incoming_i+1)%queue_size; //cyclic buffer
+    buf_i = (buf_i+1)%queue_size; //cyclic buffer since we are removing the oldest request every time
+    buf_size++;
+    requests_buffer[buf_i] = connfd; //push to buffer
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&lock);    
+}
+
+pop_buffer(queue_size)
+{
+    int connfd;
+    pthread_mutex_lock(&lock);
+    while (buf_size == 0)
+    {
+        pthread_cond_wait(&cond, &lock);
+    }
+    connfd = requests_buffer[buf_i];
+    buf_i = (buf_i - 1 + queue_size)%queue_size; //pop buffer
+    buf_size--;
+    handled_reqs_num++;
+    pthread_mutex_unlock(&lock);
+    return connfd;
 }
 
 int main(int argc, char *argv[])
@@ -84,16 +115,18 @@ int main(int argc, char *argv[])
     int port, num_threads, queue_size, listenfd, connfd, clientlen;
     char sched_alg[ARG_MAX_LEN];
     struct sockaddr_in clientaddr;
+    void* sched_func;
     
     getargs(&port, &num_threads, &queue_size, &sched_alg, argc, argv);
-    initialize_buffers(queue_size,num_threads);
+    init_buffer(queue_size,num_threads);
+    init_lock();
     create_worker_threads(port, num_threads, queue_size, argv);
 
     listenfd = Open_listenfd(port);
     while (1) {
 	clientlen = sizeof(clientaddr);
 	connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen); //should stay in main thread
-    place_in_queue(connfd, queue_size);
+    push_buffer(connfd, queue_size, sched_func);
 	// 
 	// HW3: In general, don't handle the request in the main thread.
 	// Save the relevant info in a buffer and have one of the worker threads 
@@ -103,7 +136,7 @@ int main(int argc, char *argv[])
 
 	// Close(connfd);
     }
-    free (incoming_requests_buffer);
+    free (requests_buffer);
 }
 
 

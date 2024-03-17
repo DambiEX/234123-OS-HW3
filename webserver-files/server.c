@@ -4,7 +4,7 @@
 #define SAFETY_MARGIN 10
 #define NULL_REQUEST -1
 #define END_OF_BUFFER -2
-int *requests_buffer, buf_i, buf_size, handled_reqs_num;
+int *requests_buffer, buf_end, buf_start, buf_size, handled_reqs_num;
 pthread_mutex_t lock;
 pthread_cond_t cond;
 
@@ -40,10 +40,13 @@ initialize_buffer(int size, int* buffer)
     }
 }
 
-init_buffer(int queue_size, int num_threads)
+init_global_vars(int queue_size)
 {
+    buf_start = 0;
+    buf_end = 0;
     buf_size = 0;
-    requests_buffer = malloc(queue_size+SAFETY_MARGIN);
+    handled_reqs_num = 0;
+    requests_buffer = malloc(queue_size + SAFETY_MARGIN);
     initialize_buffer(queue_size, requests_buffer);
 }
 
@@ -66,7 +69,7 @@ void worker_routine(int queue_size)
     }
 }
 
-int create_worker_threads(int port, int num_threads, int queue_size, char *argv)
+int create_worker_threads(int num_threads, int queue_size)
 {
     pthread_t *threads;
     for (size_t i = 0; i < num_threads; i++)
@@ -78,18 +81,17 @@ int create_worker_threads(int port, int num_threads, int queue_size, char *argv)
 
 void push_buffer(int connfd, int queue_size, void (*sched_func)())
 {
-    //only add request if there is room in buffer
     pthread_mutex_lock(&lock);
-    if (buf_size + handled_reqs_num >= queue_size) 
+    if (buf_size + handled_reqs_num >= queue_size)  // only add request if there is room in buffer
     {
         sched_func();
         pthread_cond_signal(&cond);
         pthread_mutex_unlock(&lock);
         return;
     }
-    buf_i = (buf_i+1)%queue_size; //cyclic buffer since we are removing the oldest request every time
+    buf_end = (buf_end + 1) % queue_size; // cyclic queue since we are removing the oldest request every time
+    requests_buffer[buf_end] = connfd; // push to cyclic queue
     buf_size++;
-    requests_buffer[buf_i] = connfd; //push to buffer
     pthread_cond_signal(&cond);
     pthread_mutex_unlock(&lock);    
 }
@@ -102,8 +104,8 @@ pop_buffer(queue_size)
     {
         pthread_cond_wait(&cond, &lock);
     }
-    connfd = requests_buffer[buf_i];
-    buf_i = (buf_i - 1 + queue_size)%queue_size; //pop buffer
+    buf_start = (buf_start + 1) % queue_size; 
+    connfd = requests_buffer[buf_start]; // remove from start of cyclic queue
     buf_size--;
     handled_reqs_num++;
     pthread_mutex_unlock(&lock);
@@ -118,9 +120,9 @@ int main(int argc, char *argv[])
     void* sched_func;
     
     getargs(&port, &num_threads, &queue_size, &sched_alg, argc, argv);
-    init_buffer(queue_size,num_threads);
+    init_global_vars(queue_size);
     init_lock();
-    create_worker_threads(port, num_threads, queue_size, argv);
+    create_worker_threads(num_threads, queue_size);
 
     listenfd = Open_listenfd(port);
     while (1) {

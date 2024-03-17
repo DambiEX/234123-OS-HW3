@@ -4,8 +4,10 @@
 #define SAFETY_MARGIN 10
 #define NULL_REQUEST -1
 #define END_OF_BUFFER -2
-int *requests_buffer;
-pthread_cond_t requests_buffer_cond;
+int *incoming_requests_buffer, *handled_requests_buffer;
+int incoming_i, handled_i;
+pthread_mutex_t incoming_lock, handled_lock;
+pthread_cond_t incoming_cond, handled_cond;
 
 
 // 
@@ -30,6 +32,23 @@ void getargs(int *port, int *num_threads, int *queue_size, char **sched_alg, int
     *sched_alg = argv[4];
 }
 
+initialize_buffer(int size, int* buffer)
+{
+    buffer[size] = END_OF_BUFFER;
+    for (size_t i = 0; i < size; i++)
+    {
+        buffer[i] = NULL_REQUEST;
+    }
+}
+
+initialize_buffers(int queue_size, int num_threads)
+{
+    incoming_requests_buffer = malloc(queue_size+SAFETY_MARGIN);
+    initialize_buffer(queue_size, incoming_requests_buffer);
+    handled_requests_buffer = malloc(num_threads+SAFETY_MARGIN);
+    initialize_buffer(num_threads, handled_requests_buffer);
+}
+
 void worker_routine()
 {
     int connfd;
@@ -50,32 +69,31 @@ int create_worker_threads(int port, int num_threads, int queue_size, char *argv)
     return 0;
 }
 
-initialize_buffer(int size, int* buffer)
+place_in_queue(int connfd, int queue_size)
 {
-    for (size_t i = 0; i < size; i++)
+    pthread_mutex_lock(&incoming_lock);
+    while (incoming_requests_buffer[incoming_i] != NULL_REQUEST) //TODO: FIX THIS. THIS SUPPORTS ONLY 1 READER
     {
-        buffer[i] = NULL_REQUEST;
+        pthread_cond_wait(&incoming_cond, &incoming_lock);
     }
+    incoming_i = (incoming_i+1)%queue_size; //cyclic buffer
 }
 
 int main(int argc, char *argv[])
 {
-    int listenfd, connfd, clientlen;
-    struct sockaddr_in clientaddr;
-
-    int port, num_threads, queue_size; //args
+    int port, num_threads, queue_size, listenfd, connfd, clientlen;
     char sched_alg[ARG_MAX_LEN];
+    struct sockaddr_in clientaddr;
+    
     getargs(&port, &num_threads, &queue_size, &sched_alg, argc, argv);
-
-    requests_buffer = malloc(queue_size+SAFETY_MARGIN);
-    initialize_buffer(queue_size, requests_buffer);
+    initialize_buffers(queue_size,num_threads);
     create_worker_threads(port, num_threads, queue_size, argv);
 
     listenfd = Open_listenfd(port);
     while (1) {
 	clientlen = sizeof(clientaddr);
-	connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
-
+	connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen); //should stay in main thread
+    place_in_queue(connfd, queue_size);
 	// 
 	// HW3: In general, don't handle the request in the main thread.
 	// Save the relevant info in a buffer and have one of the worker threads 
@@ -85,7 +103,7 @@ int main(int argc, char *argv[])
 
 	// Close(connfd);
     }
-    free (requests_buffer);
+    free (incoming_requests_buffer);
 }
 
 

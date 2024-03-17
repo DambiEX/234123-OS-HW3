@@ -1,5 +1,6 @@
 #include "segel.h"
 #include "request.h"
+#define ARG_MAX_LEN 10
 
 // 
 // server.c: A very, very simple web server
@@ -12,26 +13,37 @@
 //
 
 // HW3: Parse the new arguments too
-void getargs(int *port, int argc, char *argv[])
+void getargs(int *port, int *num_threads, int *queue_size, char **sched_alg, int argc, char *argv[])
 {
     if (argc < 2) {
 	fprintf(stderr, "Usage: %s <port>\n", argv[0]);
 	exit(1);
     }
     *port = atoi(argv[1]);
+    *num_threads = atoi(argv[2]);
+    *queue_size = atoi(argv[3]);
+    *sched_alg = argv[4];
 }
-
+int create_worker_threads();
+// {
+//         pthread_t thread1;
+//     pthread_create(&thread1, NULL, worker_routine, args);
+// }
 
 int main(int argc, char *argv[])
 {
-    int listenfd, connfd, port, clientlen;
+    int listenfd, connfd, clientlen;
     struct sockaddr_in clientaddr;
 
-    getargs(&port, argc, argv);
+    int port, num_threads, queue_size; //args
+    char sched_alg[ARG_MAX_LEN];
+    getargs(&port, &num_threads, &queue_size, &sched_alg, argc, argv);
 
     // 
     // HW3: Create some threads...
     //
+    create_worker_threads();
+
 
     listenfd = Open_listenfd(port);
     while (1) {

@@ -19,9 +19,15 @@ pthread_cond_t buf_cond;
 // Most of the work is done within routines written in request.c
 //
 
+//------------------------------------------HELPER FUNCTIONS------------------------------//
+int queue_is_full()
+{
+    return (queue_size + handled_reqs_num >= max_queue_size);
+}
+
 //--------------------------------------------INIT----------------------------------------//
 
-void getargs(int *port, int *num_threads, int *max_q_size, char **sched_alg, int argc, char *argv[])
+void getargs(int *port, int *num_threads, int *max_q_size, char *sched_alg[], int argc, char *argv[])
 {
     if (argc < 2) {
 	fprintf(stderr, "Usage: %s <port>\n", argv[0]);
@@ -58,44 +64,16 @@ void init_buf_lock()
     pthread_cond_init(&buf_cond, NULL);
 }
 
-
-//-----------------------------------------------MULTI THREADING----------------------------------------//
-
-void worker_routine()
+void master_block_and_wait();
+void* parse_sched_alg(char* sched_alg_string)
 {
-    int connfd;
-    while (1){
-        connfd = pop_buffer(max_queue_size);
-        requestHandle(connfd);
-        Close(connfd);
-        pthread_mutex_lock(&buf_lock);
-        if (queue_is_full())
-        {
-            pthread_cond_signal(&buf_cond); // clearing room in queue. wake up master.
-        }
-        handled_reqs_num--;
-        pthread_mutex_unlock(&buf_lock);
-    }
-}
-
-int create_worker_threads(int num_threads)
-{
-    pthread_t *threads;
-    for (size_t i = 0; i < num_threads; i++)
-    {
-        pthread_create(&threads[i], NULL, worker_routine, max_queue_size);
-    }
-    return 0;
+    return master_block_and_wait;
+    // TODO: parse sched alg and choose correct algorithm for part 2 of HW.
 }
 
 //-----------------------------------------------BUFFER ACTIONS----------------------------------------//
 
-int queue_is_full()
-{
-    return (queue_size + handled_reqs_num >= max_queue_size);
-}
-
-master_block_and_wait(pthread_cond_t cond, pthread_mutex_t lock)
+void master_block_and_wait(pthread_cond_t cond, pthread_mutex_t lock)
 {
     while (queue_is_full())
     {
@@ -123,7 +101,7 @@ void push_buffer(int connfd, void (*sched_func)(int max_size))
     pthread_mutex_unlock(&buf_lock);    
 }
 
-pop_buffer()
+int pop_buffer()
 {
     int connfd;
     pthread_mutex_lock(&buf_lock);
@@ -139,20 +117,50 @@ pop_buffer()
     return connfd;
 }
 
+//-----------------------------------------------MULTI THREADING----------------------------------------//
+
+void* worker_routine(void* args)
+{
+    int connfd;
+    while (1){
+        connfd = pop_buffer(max_queue_size);
+        requestHandle(connfd);
+        Close(connfd);
+        pthread_mutex_lock(&buf_lock);
+        if (queue_is_full())
+        {
+            pthread_cond_signal(&buf_cond); // clearing room in queue. wake up master.
+        }
+        handled_reqs_num--;
+        pthread_mutex_unlock(&buf_lock);
+    }
+}
+
+int create_worker_threads(int num_threads)
+{
+    pthread_t *threads = malloc((num_threads+SAFETY_MARGIN)*sizeof(pthread_t));
+    for (size_t i = 0; i < num_threads; i++)
+    {
+        pthread_create(&threads[i], NULL, worker_routine, NULL);
+    }
+    return 0;
+}
+
 
 //-----------------------------------------------MAIN----------------------------------------//
 
 int main(int argc, char *argv[])
 {
     int port, num_threads, max_q_size, listenfd, connfd, clientlen;
-    char sched_alg[ARG_MAX_LEN];
+    char *sched_alg;
     struct sockaddr_in clientaddr;
     void* sched_func;
     
     getargs(&port, &num_threads, &max_q_size, &sched_alg, argc, argv);
     init_global_vars(max_q_size);
-    init_lock();
+    init_buf_lock();
     create_worker_threads(num_threads);
+    sched_func = parse_sched_alg(sched_alg);
 
     listenfd = Open_listenfd(port);
     while (1) {

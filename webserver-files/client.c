@@ -1,3 +1,26 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <strings.h>
+#include <ctype.h>
+#include <setjmp.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <errno.h>
+#include <math.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <sys/socket.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 /*
  * client.c: A very, very primitive HTTP client.
  * 
@@ -71,21 +94,25 @@ void clientPrint(int fd)
   }
 }
 
-int main(int argc, char *argv[])
-{
+void* worker_routine(void* args){
+  char** argv = (char**)args;
+  int argc = atoi(argv[0]);
   char *host, *filename;
   int port;
   int clientfd;
 
-  if (argc != 4) {
-    fprintf(stderr, "Usage: %s <host> <port> <filename>\n", argv[0]);
-    exit(1);
-  }
+  //   if (argc != 4) {
+  //   fprintf(stderr, "Usage: %s <host> <port> <filename>\n", argv[0]);
+  //   exit(1);
+  // }
 
-  host = argv[1];
-  port = atoi(argv[2]);
-  filename = argv[3];
-
+  // host = argv[1];
+  // port = atoi(argv[2]);
+  // filename = argv[3];
+  host = "localhost";
+  port = 6666;
+  filename = "home.html";
+  fprintf(stderr, "brrrrrr");
   /* Open a single connection to the specified host and port */
   clientfd = Open_clientfd(host, port);
   
@@ -93,6 +120,22 @@ int main(int argc, char *argv[])
   clientPrint(clientfd);
     
   Close(clientfd);
+  exit(0);
+}
 
+int create_worker_threads(int argc, char *argv[])
+{
+  int num_threads = 5;
+  pthread_t *threads = malloc((num_threads+10)*sizeof(pthread_t));
+  for (size_t i = 0; i < num_threads; i++)
+  {
+      pthread_create(&threads[i], NULL, worker_routine, argv);
+  }
+  return 0;
+}
+
+int main(int argc, char *argv[])
+{
+  create_worker_threads(argc, argv);
   exit(0);
 }

@@ -112,7 +112,6 @@ void* worker_routine(void* args){
   host = "localhost";
   port = 6666;
   filename = "home.html";
-  fprintf(stderr, "brrrrrr");
   /* Open a single connection to the specified host and port */
   clientfd = Open_clientfd(host, port);
   
@@ -120,7 +119,7 @@ void* worker_routine(void* args){
   clientPrint(clientfd);
     
   Close(clientfd);
-  exit(0);
+  pthread_exit(0);
 }
 
 int create_worker_threads(int argc, char *argv[])
@@ -137,5 +136,5 @@ int create_worker_threads(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
   create_worker_threads(argc, argv);
-  exit(0);
+  pthread_exit(0);
 }

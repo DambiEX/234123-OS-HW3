@@ -22,6 +22,7 @@ pthread_cond_t buf_cond;
 //------------------------------------------HELPER FUNCTIONS------------------------------//
 int queue_is_full()
 {
+    printf("queue size %d, handled %d, max queue %d", queue_size,handled_reqs_num,max_queue_size);
     return (queue_size + handled_reqs_num >= max_queue_size);
 }
 
@@ -33,10 +34,14 @@ void getargs(int *port, int *num_threads, int *max_q_size, char *sched_alg[], in
 	fprintf(stderr, "Usage: %s <port>\n", argv[0]);
 	exit(1);
     }
+    printf("atoi 1: %d",atoi(argv[1]));
     *port = atoi(argv[1]);
-    *num_threads = atoi(argv[2]);
-    *max_q_size = atoi(argv[3]);
-    *sched_alg = argv[4];
+    // *num_threads = atoi(argv[2]);
+    // *max_q_size = atoi(argv[3]);
+    // *sched_alg = argv[4];
+    *num_threads = 10;
+    *max_q_size = 100;
+    *sched_alg = "\0";
 }
 
 void initialize_buffer(int size, int* buffer)
@@ -54,6 +59,7 @@ void init_global_vars(int max_q_size)
     buf_end = 0;
     queue_size = 0;
     handled_reqs_num = 0;
+    max_queue_size = max_q_size;
     requests_buffer = malloc(max_q_size + SAFETY_MARGIN);
     initialize_buffer(max_q_size, requests_buffer);
 }
@@ -90,6 +96,7 @@ void push_buffer(int connfd, void (*sched_func)(int max_size))
     pthread_mutex_lock(&buf_lock);
     if (queue_is_full())  // only add request if there is room in queue
     {
+        printf("queue is full"); //TODO: delete
         sched_func(max_queue_size);
         pthread_mutex_unlock(&buf_lock); // note: unlock of unlocked mutex is undefined!
         return;
@@ -165,15 +172,16 @@ int main(int argc, char *argv[])
     listenfd = Open_listenfd(port);
     while (1) {
 	clientlen = sizeof(clientaddr);
+    printf("accepting");
 	connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen); //should stay in main thread
-    push_buffer(connfd, sched_func);
-	// 
+    printf("accepted");
 	// HW3: In general, don't handle the request in the main thread.
 	// Save the relevant info in a buffer and have one of the worker threads 
 	// do the work. 
-	// 
-	// requestHandle(connfd);
+	
+    push_buffer(connfd, sched_func);
 
+	// requestHandle(connfd);
 	// Close(connfd);
     }
     free (requests_buffer);

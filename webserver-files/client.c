@@ -111,7 +111,7 @@ void* worker_routine(void* args){
   // filename = argv[3];
   host = "localhost";
   port = 6666;
-  filename = "home.html";
+  filename = "output.cgi";
   /* Open a single connection to the specified host and port */
   clientfd = Open_clientfd(host, port);
   
@@ -124,7 +124,7 @@ void* worker_routine(void* args){
 
 int create_worker_threads(int argc, char *argv[])
 {
-  int num_threads = 5;
+  int num_threads = 15;
   pthread_t *threads = malloc((num_threads+10)*sizeof(pthread_t));
   for (size_t i = 0; i < num_threads; i++)
   {

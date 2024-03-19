@@ -38,8 +38,8 @@ void getargs(int *port, int *num_threads, int *max_q_size, char *sched_alg[], in
     // *num_threads = atoi(argv[2]);
     // *max_q_size = atoi(argv[3]);
     // *sched_alg = argv[4];
-    *num_threads = 10;
-    *max_q_size = 100;
+    *num_threads = 3;
+    *max_q_size = 10;
     *sched_alg = "\0";
 }
 
@@ -78,15 +78,15 @@ void* parse_sched_alg(char* sched_alg_string)
 
 //-----------------------------------------------BUFFER ACTIONS----------------------------------------//
 
-void master_block_and_wait(pthread_cond_t cond, pthread_mutex_t lock)
+void master_block_and_wait()
 {
     while (queue_is_full())
     {
-        pthread_cond_wait(&cond, &lock);  // the master thread must block and wait if the queue is full
+        pthread_cond_wait(&buf_cond, &buf_lock);  // the master thread must block and wait if the queue is full
     }
     if (queue_size > 0)
     {
-        pthread_cond_signal(&cond); // TODO: maybe not needed?
+        pthread_cond_signal(&buf_cond); // TODO: maybe not needed?
     }
 }
 

@@ -4,6 +4,9 @@
 #define SAFETY_MARGIN 10
 #define NULL_REQUEST -1
 #define END_OF_BUFFER -2
+#define BLOCK "block"
+#define DROP_TAIL "drop tail"
+#define DROP_HEAD "drop head"
 int *requests_buffer, buf_end, buf_start, queue_size, max_queue_size, handled_reqs_num;
 pthread_mutex_t buf_lock;
 pthread_cond_t buf_cond;
@@ -29,7 +32,7 @@ int queue_is_full()
 
 void getargs(int *port, int *num_threads, int *max_q_size, char *sched_alg[], int argc, char *argv[])
 {
-    if (argc < 2) {
+    if (argc < 4) {
 	fprintf(stderr, "Usage: %s <port>\n", argv[0]);
 	exit(1);
     }
@@ -65,33 +68,15 @@ void init_buf_lock()
     pthread_cond_init(&buf_cond, NULL);
 }
 
-void master_block_and_wait();
-void* parse_sched_alg(char* sched_alg_string)
-{
-    return master_block_and_wait;
-    // TODO: parse sched alg and choose correct algorithm for part 2 of HW.
-}
 
 //-----------------------------------------------BUFFER ACTIONS----------------------------------------//
 
-void master_block_and_wait()
-{
-    while (queue_is_full())
-    {
-        pthread_cond_wait(&buf_cond, &buf_lock);  // the master thread must block and wait if the queue is full
-    }
-    if (queue_size > 0)
-    {
-        pthread_cond_signal(&buf_cond);
-    }
-}
-
-void push_buffer(int connfd, void (*sched_func)(int max_size))
+void push_buffer(int connfd, void (*sched_func)(int connfd))
 {
     pthread_mutex_lock(&buf_lock);
     if (queue_is_full())  // only add request if there is room in queue
     {
-        sched_func(max_queue_size);
+        sched_func(connfd);
         pthread_mutex_unlock(&buf_lock); // note: unlock of unlocked mutex is undefined!
         return;
     }
@@ -130,9 +115,14 @@ void* worker_routine(void* args)
         pthread_mutex_lock(&buf_lock);
         if (queue_is_full())
         {
+            fprintf(stderr, "worker. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
+            handled_reqs_num--;
             pthread_cond_signal(&buf_cond); // clearing room in queue. wake up master.
         }
-        handled_reqs_num--;
+        else
+        {
+            handled_reqs_num--;
+        }
         pthread_mutex_unlock(&buf_lock);
     }
 }
@@ -145,6 +135,63 @@ int create_worker_threads(int num_threads)
         pthread_create(&threads[i], NULL, worker_routine, NULL);
     }
     return 0;
+}
+
+//--------------------------------------------SCHEDULING ALGORITHMS-------------------------------//
+
+void master_block_and_wait();
+void drop_tail(int connfd);
+void drop_head(int new_connfd);
+void* parse_sched_alg(char* sched_alg_string)
+{
+   if (!strcmp(sched_alg_string, BLOCK))
+   {
+    	fprintf(stderr, "policy: BLOCK");
+        return master_block_and_wait;
+   }
+   else if (!strcmp(sched_alg_string, DROP_TAIL))
+   {
+        fprintf(stderr, "policy: DROP TAIL");
+        return drop_tail;
+   }
+   else if (!strcmp(sched_alg_string, DROP_HEAD))
+   {
+    fprintf(stderr, "policy: DROP HEAD");
+        return drop_head;
+   }
+   fprintf(stderr, "policy: %s", sched_alg_string);
+   return master_block_and_wait;
+}
+
+//------------------all of these functions are called while holding mutex.------------------//
+
+void master_block_and_wait(int connfd)
+{
+    while (queue_is_full())
+    {
+        fprintf(stderr, "queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
+        pthread_cond_wait(&buf_cond, &buf_lock);  // the master thread must block and wait if the queue is full
+    }
+    if (queue_size > 0)
+    {
+        pthread_cond_signal(&buf_cond);
+    }
+    push_buffer(connfd, master_block_and_wait);
+}
+
+void drop_tail(int connfd)
+{
+    Close(connfd);
+}
+
+void drop_head(int new_connfd)
+{
+    handled_reqs_num--; // needed because the popping increments it by 1. should be done while locked.
+    pthread_mutex_unlock(&buf_lock); // note: unlock of unlocked mutex is undefined!
+    int old_connfd = pop_buffer(max_queue_size);
+    Close(old_connfd);
+    push_buffer(new_connfd, drop_head);
+    pthread_mutex_lock(&buf_lock);
 }
 
 

@@ -22,7 +22,6 @@ pthread_cond_t buf_cond;
 //------------------------------------------HELPER FUNCTIONS------------------------------//
 int queue_is_full()
 {
-    // printf("queue size %d, handled %d, max queue %d", queue_size,handled_reqs_num,max_queue_size);
     return (queue_size + handled_reqs_num >= max_queue_size);
 }
 
@@ -35,12 +34,9 @@ void getargs(int *port, int *num_threads, int *max_q_size, char *sched_alg[], in
 	exit(1);
     }
     *port = atoi(argv[1]);
-    // *num_threads = atoi(argv[2]);
-    // *max_q_size = atoi(argv[3]);
-    // *sched_alg = argv[4];
-    *num_threads = 3;
-    *max_q_size = 10;
-    *sched_alg = "\0";
+    *num_threads = atoi(argv[2]);
+    *max_q_size = atoi(argv[3]);
+    *sched_alg = argv[4];
 }
 
 void initialize_buffer(int size, int* buffer)
@@ -86,7 +82,7 @@ void master_block_and_wait()
     }
     if (queue_size > 0)
     {
-        pthread_cond_signal(&buf_cond); // TODO: maybe not needed?
+        pthread_cond_signal(&buf_cond);
     }
 }
 
@@ -171,14 +167,7 @@ int main(int argc, char *argv[])
     while (1) {
 	clientlen = sizeof(clientaddr);
 	connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen); //should stay in main thread
-	// HW3: In general, don't handle the request in the main thread.
-	// Save the relevant info in a buffer and have one of the worker threads 
-	// do the work. 
-	
     push_buffer(connfd, sched_func);
-
-	// requestHandle(connfd);
-	// Close(connfd);
     }
     free (requests_buffer);
 }

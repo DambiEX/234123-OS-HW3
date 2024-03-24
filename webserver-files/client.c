@@ -96,22 +96,13 @@ void clientPrint(int fd)
 
 void* worker_routine(void* args){
   char** argv = (char**)args;
-  int argc = atoi(argv[0]);
-  char *host, *filename;
-  int port;
-  int clientfd;
+  char *host;
+  char *filename;
+  int port, clientfd;
 
-  //   if (argc != 4) {
-  //   fprintf(stderr, "Usage: %s <host> <port> <filename>\n", argv[0]);
-  //   exit(1);
-  // }
-
-  // host = argv[1];
-  // port = atoi(argv[2]);
-  // filename = argv[3];
-  host = "localhost";
-  port = 6666;
-  filename = "output.cgi";
+  host = argv[1];
+  port = atoi(argv[2]);
+  filename = argv[3];
   /* Open a single connection to the specified host and port */
   clientfd = Open_clientfd(host, port);
   
@@ -124,7 +115,19 @@ void* worker_routine(void* args){
 
 int create_worker_threads(int argc, char *argv[])
 {
-  int num_threads = 15;
+  int num_threads;
+  if (argc < 4) {
+    fprintf(stderr, "Usage: %s <host> <port> <filename>\n", argv[0]);
+    exit(1);
+  }
+  if (argc == 4)
+  {
+    num_threads = 1;
+  }
+  else{
+    num_threads = atoi(argv[4]);
+  }
+  
   pthread_t *threads = malloc((num_threads+10)*sizeof(pthread_t));
   for (size_t i = 0; i < num_threads; i++)
   {

@@ -5,11 +5,11 @@
 #define NULL_REQUEST -1
 #define END_OF_BUFFER -2
 #define BLOCK "block"
-#define DROP_TAIL "drop tail"
-#define DROP_HEAD "drop head"
+#define DROP_TAIL "drop_tail"
+#define DROP_HEAD "drop_head"
 int *requests_buffer, buf_end, buf_start, queue_size, max_queue_size, handled_reqs_num;
 pthread_mutex_t buf_lock;
-pthread_cond_t buf_cond;
+pthread_cond_t buf_cond, master_cond;
 
 
 // 
@@ -66,6 +66,7 @@ void init_buf_lock()
 {
     pthread_mutex_init(&buf_lock, NULL);
     pthread_cond_init(&buf_cond, NULL);
+    pthread_cond_init(&master_cond, NULL);
 }
 
 
@@ -79,7 +80,6 @@ void push_buffer(int connfd, void (*sched_func)(int connfd))
     if (queue_is_full())  // only add request if there is room in queue
     {
         sched_func(connfd);
-        pthread_mutex_unlock(&buf_lock); // note: unlock of unlocked mutex is undefined!
         return;
     }
     buf_end = (buf_end + 1) % max_queue_size; // cyclic queue since we are removing the oldest request every time
@@ -115,19 +115,22 @@ void* worker_routine(void* args)
     int connfd;
     while (1){
         connfd = pop_buffer(max_queue_size);
+        fprintf(stderr, "worker. popped. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
         requestHandle(connfd);
+        fprintf(stderr, "worker. handled. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
         Close(connfd);
         pthread_mutex_lock(&buf_lock);
         if (queue_is_full())
         {
             fprintf(stderr, "worker. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
             handled_reqs_num--;
-            pthread_cond_signal(&buf_cond); // clearing room in queue. wake up master.
+            pthread_cond_signal(&master_cond); // clearing room in queue. wake up master.
         }
         else
         {
             handled_reqs_num--;
         }
+        fprintf(stderr, "worker. unlocking. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
         pthread_mutex_unlock(&buf_lock);
     }
 }
@@ -175,20 +178,16 @@ void master_block_and_wait(int connfd)
     while (queue_is_full())
     {
         fprintf(stderr, "master block. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
-        pthread_cond_wait(&buf_cond, &buf_lock);  // the master thread must block and wait if the queue is full
-    }
-    if (queue_size > 0)
-    {
-        pthread_cond_signal(&buf_cond);
+        pthread_cond_wait(&master_cond, &buf_lock);  // the master thread must block and wait if the queue is full
     }
     pthread_mutex_unlock(&buf_lock);
     push_buffer(connfd, master_block_and_wait);
-    pthread_mutex_lock(&buf_lock);
 }
 
 void drop_tail(int connfd)
 {
     Close(connfd);
+    pthread_mutex_unlock(&buf_lock);
 }
 
 void drop_head(int new_connfd)
@@ -198,7 +197,6 @@ void drop_head(int new_connfd)
     int old_connfd = pop_buffer(max_queue_size);
     Close(old_connfd);
     push_buffer(new_connfd, drop_head);
-    pthread_mutex_lock(&buf_lock);
 }
 
 

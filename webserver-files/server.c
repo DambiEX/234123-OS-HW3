@@ -25,7 +25,7 @@ pthread_cond_t buf_cond;
 //------------------------------------------HELPER FUNCTIONS------------------------------//
 int queue_is_full()
 {
-    return (queue_size + handled_reqs_num >= max_queue_size);
+    return ((queue_size + handled_reqs_num) >= max_queue_size);
 }
 
 //--------------------------------------------INIT----------------------------------------//
@@ -73,7 +73,9 @@ void init_buf_lock()
 
 void push_buffer(int connfd, void (*sched_func)(int connfd))
 {
+    fprintf(stderr, "push buffer. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
     pthread_mutex_lock(&buf_lock);
+    fprintf(stderr, "push buffer. entered lock \n");
     if (queue_is_full())  // only add request if there is room in queue
     {
         sched_func(connfd);
@@ -89,10 +91,13 @@ void push_buffer(int connfd, void (*sched_func)(int connfd))
 
 int pop_buffer()
 {
+    fprintf(stderr, "worker. pop buffer. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
     int connfd;
+    
     pthread_mutex_lock(&buf_lock);
     while (queue_size == 0)
     {
+        fprintf(stderr, "worker. queue size == 0. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
         pthread_cond_wait(&buf_cond, &buf_lock);
     }
     buf_start = (buf_start + 1) % max_queue_size; 
@@ -169,14 +174,16 @@ void master_block_and_wait(int connfd)
 {
     while (queue_is_full())
     {
-        fprintf(stderr, "queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
+        fprintf(stderr, "master block. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
         pthread_cond_wait(&buf_cond, &buf_lock);  // the master thread must block and wait if the queue is full
     }
     if (queue_size > 0)
     {
         pthread_cond_signal(&buf_cond);
     }
+    pthread_mutex_unlock(&buf_lock);
     push_buffer(connfd, master_block_and_wait);
+    pthread_mutex_lock(&buf_lock);
 }
 
 void drop_tail(int connfd)

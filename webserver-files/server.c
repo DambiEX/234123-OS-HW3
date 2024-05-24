@@ -7,6 +7,9 @@
 #define BLOCK "block"
 #define DROP_TAIL "drop_tail"
 #define DROP_HEAD "drop_head"
+#define BLOCK_FLUSH "block_flush"
+#define DROP_RANDOM "drop_random"
+
 int *requests_buffer, buf_end, buf_start, queue_size, max_queue_size, handled_reqs_num;
 pthread_mutex_t buf_lock;
 pthread_cond_t buf_cond, master_cond;
@@ -94,7 +97,6 @@ int pop_buffer()
     fprintf(stderr, "worker. pop buffer. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
     int connfd;
     
-    pthread_mutex_lock(&buf_lock);
     while (queue_size == 0)
     {
         fprintf(stderr, "worker. queue size == 0. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
@@ -104,8 +106,20 @@ int pop_buffer()
     connfd = requests_buffer[buf_start]; // remove from start of cyclic queue
     queue_size--;
     handled_reqs_num++;
-    pthread_mutex_unlock(&buf_lock);
     return connfd;
+}
+
+void pop_index(int index)
+{
+    //called when locked
+    int connfd_to_remove = requests_buffer[index];
+    for (int i = index; i > buf_start; i--)
+    {
+        requests_buffer[i] = requests_buffer[i-1]; 
+    }    
+    requests_buffer[buf_start] = connfd_to_remove;
+    
+    pop_buffer();
 }
 
 //-----------------------------------------------MULTI THREADING----------------------------------------//
@@ -114,7 +128,9 @@ void* worker_routine(void* args)
 {
     int connfd;
     while (1){
+        pthread_mutex_lock(&buf_lock);
         connfd = pop_buffer(max_queue_size);
+        pthread_mutex_unlock(&buf_lock);
         fprintf(stderr, "worker. popped. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
         requestHandle(connfd);
         fprintf(stderr, "worker. handled. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
@@ -130,6 +146,11 @@ void* worker_routine(void* args)
         {
             handled_reqs_num--;
         }
+        if (handled_reqs_num == 0)
+        {
+            pthread_cond_signal(&master_cond); // wake up master in case overload policy is block and wait.
+        }
+        
         fprintf(stderr, "worker. unlocking. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
         pthread_mutex_unlock(&buf_lock);
     }
@@ -147,9 +168,11 @@ int create_worker_threads(int num_threads)
 
 //--------------------------------------------SCHEDULING ALGORITHMS-------------------------------//
 
-void master_block_and_wait();
+void master_block_and_wait(int connfd);
 void drop_tail(int connfd);
 void drop_head(int new_connfd);
+void block_flush(int connfd);
+void drop_random(int connfd);
 void* parse_sched_alg(char* sched_alg_string)
 {
    if (!strcmp(sched_alg_string, BLOCK))
@@ -165,6 +188,16 @@ void* parse_sched_alg(char* sched_alg_string)
    else if (!strcmp(sched_alg_string, DROP_HEAD))
    {
     fprintf(stderr, "policy: DROP HEAD");
+        return drop_head;
+   }
+   else if (!strcmp(sched_alg_string, BLOCK_FLUSH))
+   {
+    fprintf(stderr, "policy: BLOCK FLUSH");
+        return block_flush;
+   }
+   else if (!strcmp(sched_alg_string, DROP_RANDOM))
+   {
+    fprintf(stderr, "policy: DROP RANDOM");
         return drop_head;
    }
    fprintf(stderr, "policy: %s", sched_alg_string);
@@ -193,12 +226,37 @@ void drop_tail(int connfd)
 void drop_head(int new_connfd)
 {
     handled_reqs_num--; // needed because the popping increments it by 1. should be done while locked.
-    pthread_mutex_unlock(&buf_lock); // note: unlock of unlocked mutex is undefined!
+    // pthread_mutex_unlock(&buf_lock); // note: unlock of unlocked mutex is undefined!
     int old_connfd = pop_buffer(max_queue_size);
+    pthread_mutex_unlock(&buf_lock);
     Close(old_connfd);
     push_buffer(new_connfd, drop_head);
 }
 
+void block_flush(int connfd)
+{
+    while (handled_reqs_num == 0)
+    {
+        fprintf(stderr, "master block until queue is empty. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
+        pthread_cond_wait(&master_cond, &buf_lock);  // the master thread must block and wait until the queue is empty
+    }
+    Close(connfd);
+    pthread_mutex_unlock(&buf_lock);
+}
+
+void drop_random(int connfd)
+{
+    int half_size = (handled_reqs_num % 2 == 0) ? handled_reqs_num/2 : handled_reqs_num/2 + 1;
+    int curr_size = handled_reqs_num;
+    while (curr_size > half_size)
+    {
+        pop_index(rand() % curr_size);
+        curr_size--;
+        // swap_reqs(rand_index, curr_size-1);
+    }
+    pthread_mutex_unlock(&buf_lock);
+    push_buffer(connfd, drop_random);
+}
 
 //-----------------------------------------------MAIN----------------------------------------//
 

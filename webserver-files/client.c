@@ -139,5 +139,6 @@ int create_worker_threads(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
   create_worker_threads(argc, argv);
+  sleep(30);
   pthread_exit(0);
 }

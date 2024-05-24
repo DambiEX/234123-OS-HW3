@@ -1,0 +1,3255 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.3, pytest-7.3.2, pluggy-1.0.0
+rootdir: /home/mayar/Technion/os-intro-hw3/webserver-files/tests
+plugins: xdist-3.3.1
+created: 4/4 workers
+4 workers [77 items]
+
+.........F..F.F.FF.FFFFFFFFFFF.FFFF.FFFFF.FFFFFF.FFFF.FF.FFFFFFFFFFFFFFF [ 93%]
+FFFFF                                                                    [100%]
+=================================== FAILURES ===================================
+______________________ test_single[dt-1-25-30-20-files2] _______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dt', threads = 1, num_clients = 25, queue_size = 30, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 20645
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 1,  25, 30, 20, SINGLE_FILES),
+                                 ("dh", 1,  25, 30, 20, SINGLE_FILES),
+                                 ("dt", 1,  25, 30, 20, SINGLE_FILES),
+                                 ("random", 1,  25, 30, 20, SINGLE_FILES),
+                             ])
+    def test_single(policy, threads, num_clients, queue_size, times, files, server_port):
+        """single thread serving many requests server params: threads 1, Q_size 30.
+        25 clients each requesting ['/home.html', '/favicon.ico'], 20 times"""
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:110: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+____________________ test_single[random-1-25-30-20-files3] _____________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'random', threads = 1, num_clients = 25, queue_size = 30, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 16022
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 1,  25, 30, 20, SINGLE_FILES),
+                                 ("dh", 1,  25, 30, 20, SINGLE_FILES),
+                                 ("dt", 1,  25, 30, 20, SINGLE_FILES),
+                                 ("random", 1,  25, 30, 20, SINGLE_FILES),
+                             ])
+    def test_single(policy, threads, num_clients, queue_size, times, files, server_port):
+        """single thread serving many requests server params: threads 1, Q_size 30.
+        25 clients each requesting ['/home.html', '/favicon.ico'], 20 times"""
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:110: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_____________________ test_light[block-20-5-10-20-files0] ______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 20, num_clients = 5, queue_size = 10, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 23312
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("block", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dh", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dh", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dt", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dt", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("random", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("random", 16, 4, 32, 30, LIGHT2_FILES),
+                             ])
+    def test_light(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:153: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_____________________ test_light[block-16-4-32-30-files1] ______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 16, num_clients = 4, queue_size = 32, times = 30
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 26504
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("block", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dh", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dh", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dt", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dt", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("random", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("random", 16, 4, 32, 30, LIGHT2_FILES),
+                             ])
+    def test_light(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:153: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_____________________ test_single[block-1-25-30-20-files0] _____________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 1, num_clients = 25, queue_size = 30, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 10352
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 1,  25, 30, 20, SINGLE_FILES),
+                                 ("dh", 1,  25, 30, 20, SINGLE_FILES),
+                                 ("dt", 1,  25, 30, 20, SINGLE_FILES),
+                                 ("random", 1,  25, 30, 20, SINGLE_FILES),
+                             ])
+    def test_single(policy, threads, num_clients, queue_size, times, files, server_port):
+        """single thread serving many requests server params: threads 1, Q_size 30.
+        25 clients each requesting ['/home.html', '/favicon.ico'], 20 times"""
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:110: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_______________________ test_light[dh-20-5-10-20-files2] _______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dh', threads = 20, num_clients = 5, queue_size = 10, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 27151
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("block", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dh", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dh", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dt", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dt", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("random", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("random", 16, 4, 32, 30, LIGHT2_FILES),
+                             ])
+    def test_light(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:153: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+______________________ test_single[dh-1-25-30-20-files1] _______________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dh', threads = 1, num_clients = 25, queue_size = 30, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 26062
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 1,  25, 30, 20, SINGLE_FILES),
+                                 ("dh", 1,  25, 30, 20, SINGLE_FILES),
+                                 ("dt", 1,  25, 30, 20, SINGLE_FILES),
+                                 ("random", 1,  25, 30, 20, SINGLE_FILES),
+                             ])
+    def test_single(policy, threads, num_clients, queue_size, times, files, server_port):
+        """single thread serving many requests server params: threads 1, Q_size 30.
+        25 clients each requesting ['/home.html', '/favicon.ico'], 20 times"""
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:110: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_______________________ test_light[dh-16-4-32-30-files3] _______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dh', threads = 16, num_clients = 4, queue_size = 32, times = 30
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 27694
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("block", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dh", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dh", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dt", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dt", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("random", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("random", 16, 4, 32, 30, LIGHT2_FILES),
+                             ])
+    def test_light(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:153: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_____________________ test_locks[block-8-20-16-20-files0] ______________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 8, num_clients = 20, queue_size = 16, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 19186
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 16, 20, LOCKS_FILES),
+                                 ("block", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("block", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("block", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dt", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dt", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dt", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dh", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dh", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dh", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("random", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("random", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("random", 25, 20, 27, 20, LOCKS4_FILES),
+                             ])
+    def test_locks(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_______________________ test_light[dt-20-5-10-20-files4] _______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dt', threads = 20, num_clients = 5, queue_size = 10, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 19385
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("block", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dh", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dh", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dt", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dt", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("random", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("random", 16, 4, 32, 30, LIGHT2_FILES),
+                             ])
+    def test_light(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:153: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_______________________ test_light[dt-16-4-32-30-files5] _______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dt', threads = 16, num_clients = 4, queue_size = 32, times = 30
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 12270
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("block", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dh", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dh", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dt", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dt", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("random", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("random", 16, 4, 32, 30, LIGHT2_FILES),
+                             ])
+    def test_light(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:153: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_____________________ test_locks[block-32-40-64-10-files1] _____________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 32, num_clients = 40, queue_size = 64, times = 10
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 25899
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 16, 20, LOCKS_FILES),
+                                 ("block", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("block", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("block", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dt", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dt", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dt", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dh", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dh", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dh", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("random", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("random", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("random", 25, 20, 27, 20, LOCKS4_FILES),
+                             ])
+    def test_locks(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_____________________ test_light[random-20-5-10-20-files6] _____________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'random', threads = 20, num_clients = 5, queue_size = 10, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 23753
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("block", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dh", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dh", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dt", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dt", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("random", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("random", 16, 4, 32, 30, LIGHT2_FILES),
+                             ])
+    def test_light(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:153: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_____________________ test_locks[block-64-50-128-6-files2] _____________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 64, num_clients = 50, queue_size = 128, times = 6
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 20366
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 16, 20, LOCKS_FILES),
+                                 ("block", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("block", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("block", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dt", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dt", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dt", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dh", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dh", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dh", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("random", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("random", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("random", 25, 20, 27, 20, LOCKS4_FILES),
+                             ])
+    def test_locks(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_____________________ test_light[random-16-4-32-30-files7] _____________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'random', threads = 16, num_clients = 4, queue_size = 32, times = 30
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 21832
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("block", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dh", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dh", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("dt", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("dt", 16, 4, 32, 30, LIGHT2_FILES),
+                                 ("random", 20, 5, 10, 20, LIGHT_FILES),
+                                 ("random", 16, 4, 32, 30, LIGHT2_FILES),
+                             ])
+    def test_light(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:153: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_____________________ test_locks[block-25-20-27-20-files3] _____________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 25, num_clients = 20, queue_size = 27, times = 20
+files = {'/output.cgi?0.005': [True, '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the s...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 9184
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 16, 20, LOCKS_FILES),
+                                 ("block", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("block", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("block", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dt", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dt", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dt", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dh", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dh", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dh", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("random", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("random", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("random", 25, 20, 27, 20, LOCKS4_FILES),
+                             ])
+    def test_locks(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 0.0\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+______________________ test_locks[dt-32-40-64-10-files4] _______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dt', threads = 32, num_clients = 40, queue_size = 64, times = 10
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 11692
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 16, 20, LOCKS_FILES),
+                                 ("block", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("block", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("block", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dt", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dt", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dt", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dh", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dh", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dh", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("random", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("random", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("random", 25, 20, 27, 20, LOCKS4_FILES),
+                             ])
+    def test_locks(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+______________________ test_locks[dh-64-50-128-6-files8] _______________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dh', threads = 64, num_clients = 50, queue_size = 128, times = 6
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 15345
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 16, 20, LOCKS_FILES),
+                                 ("block", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("block", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("block", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dt", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dt", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dt", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dh", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dh", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dh", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("random", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("random", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("random", 25, 20, 27, 20, LOCKS4_FILES),
+                             ])
+    def test_locks(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+______________________ test_locks[dt-64-50-128-6-files5] _______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dt', threads = 64, num_clients = 50, queue_size = 128, times = 6
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 16285
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 16, 20, LOCKS_FILES),
+                                 ("block", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("block", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("block", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dt", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dt", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dt", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dh", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dh", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dh", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("random", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("random", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("random", 25, 20, 27, 20, LOCKS4_FILES),
+                             ])
+    def test_locks(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+______________________ test_locks[dh-25-20-27-20-files9] _______________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dh', threads = 25, num_clients = 20, queue_size = 27, times = 20
+files = {'/output.cgi?0.005': [True, '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the s...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 17051
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 16, 20, LOCKS_FILES),
+                                 ("block", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("block", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("block", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dt", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dt", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dt", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dh", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dh", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dh", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("random", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("random", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("random", 25, 20, 27, 20, LOCKS4_FILES),
+                             ])
+    def test_locks(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 0.0\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+______________________ test_locks[dt-25-20-27-20-files6] _______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dt', threads = 25, num_clients = 20, queue_size = 27, times = 20
+files = {'/output.cgi?0.005': [True, '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the s...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 11898
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 16, 20, LOCKS_FILES),
+                                 ("block", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("block", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("block", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dt", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dt", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dt", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dh", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dh", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dh", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("random", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("random", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("random", 25, 20, 27, 20, LOCKS4_FILES),
+                             ])
+    def test_locks(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 0.0\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+____________________ test_locks[random-32-40-64-10-files10] ____________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'random', threads = 32, num_clients = 40, queue_size = 64, times = 10
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 22695
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 16, 20, LOCKS_FILES),
+                                 ("block", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("block", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("block", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dt", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dt", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dt", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dh", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dh", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dh", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("random", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("random", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("random", 25, 20, 27, 20, LOCKS4_FILES),
+                             ])
+    def test_locks(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+______________________ test_locks[dh-32-40-64-10-files7] _______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dh', threads = 32, num_clients = 40, queue_size = 64, times = 10
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 21507
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 16, 20, LOCKS_FILES),
+                                 ("block", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("block", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("block", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dt", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dt", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dt", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dh", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dh", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dh", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("random", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("random", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("random", 25, 20, 27, 20, LOCKS4_FILES),
+                             ])
+    def test_locks(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+____________________ test_locks[random-64-50-128-6-files11] ____________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'random', threads = 64, num_clients = 50, queue_size = 128, times = 6
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 10927
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 16, 20, LOCKS_FILES),
+                                 ("block", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("block", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("block", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dt", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dt", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dt", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dh", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dh", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dh", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("random", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("random", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("random", 25, 20, 27, 20, LOCKS4_FILES),
+                             ])
+    def test_locks(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_____________________ test_equal[block-32-32-32-20-files1] _____________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 32, num_clients = 32, queue_size = 32, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 19801
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 8, 10, EQUAL_FILES),
+                                 ("block", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("block", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dh", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dh", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dt", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dt", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("random", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("random", 16, 12, 16, 20, EQUAL_FILES),
+                             ])
+    def test_equal(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:246: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+____________________ test_locks[random-25-20-27-20-files12] ____________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'random', threads = 25, num_clients = 20, queue_size = 27, times = 20
+files = {'/output.cgi?0.005': [True, '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the s...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 25571
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 16, 20, LOCKS_FILES),
+                                 ("block", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("block", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("block", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dt", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dt", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dt", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("dh", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("dh", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("dh", 25, 20, 27, 20, LOCKS4_FILES),
+                                 ("random", 32, 40, 64, 10, LOCKS2_FILES),
+                                 ("random", 64, 50, 128, 6, LOCKS3_FILES),
+                                 ("random", 25, 20, 27, 20, LOCKS4_FILES),
+                             ])
+    def test_locks(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 0.0\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+_____________________ test_equal[block-16-12-16-20-files2] _____________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 16, num_clients = 12, queue_size = 16, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 25590
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 8, 10, EQUAL_FILES),
+                                 ("block", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("block", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dh", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dh", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dt", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dt", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("random", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("random", 16, 12, 16, 20, EQUAL_FILES),
+                             ])
+    def test_equal(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:246: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+______________________ test_equal[block-8-20-8-10-files0] ______________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 8, num_clients = 20, queue_size = 8, times = 10
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 9007
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 8, 10, EQUAL_FILES),
+                                 ("block", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("block", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dh", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dh", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dt", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dt", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("random", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("random", 16, 12, 16, 20, EQUAL_FILES),
+                             ])
+    def test_equal(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:246: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+______________________ test_equal[dh-32-32-32-20-files3] _______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dh', threads = 32, num_clients = 32, queue_size = 32, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 25787
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 8, 10, EQUAL_FILES),
+                                 ("block", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("block", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dh", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dh", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dt", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dt", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("random", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("random", 16, 12, 16, 20, EQUAL_FILES),
+                             ])
+    def test_equal(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:246: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+____________________ test_equal[random-32-32-32-20-files7] _____________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'random', threads = 32, num_clients = 32, queue_size = 32, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 9030
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 8, 10, EQUAL_FILES),
+                                 ("block", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("block", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dh", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dh", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dt", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dt", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("random", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("random", 16, 12, 16, 20, EQUAL_FILES),
+                             ])
+    def test_equal(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:246: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+______________________ test_equal[dh-16-12-16-20-files4] _______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dh', threads = 16, num_clients = 12, queue_size = 16, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 27060
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 8, 10, EQUAL_FILES),
+                                 ("block", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("block", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dh", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dh", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dt", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dt", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("random", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("random", 16, 12, 16, 20, EQUAL_FILES),
+                             ])
+    def test_equal(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:246: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+____________________ test_equal[random-16-12-16-20-files8] _____________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'random', threads = 16, num_clients = 12, queue_size = 16, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 8299
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 8, 10, EQUAL_FILES),
+                                 ("block", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("block", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dh", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dh", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dt", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dt", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("random", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("random", 16, 12, 16, 20, EQUAL_FILES),
+                             ])
+    def test_equal(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:246: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_____________________ test_fewer[block-16-20-8-20-files0] ______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 16, num_clients = 20, queue_size = 8, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 12361
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 16, 20, 8, 20, FEWER_FILES),
+                                 ("dt", 16, 20, 8, 20, FEWER_FILES),
+                                 ("dh", 16, 20, 8, 20, FEWER_FILES),
+                                 ("random", 16, 20, 8, 20, FEWER_FILES),
+                             ])
+    def test_fewer(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    dropped = 0
+                    for client in clients:
+                        try:
+                            response = client[1].result()
+                        except requests.exceptions.ConnectionError:
+                            dropped += 1
+                            continue
+                        finally:
+                            client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:285: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_______________________ test_fewer[dt-16-20-8-20-files1] _______________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dt', threads = 16, num_clients = 20, queue_size = 8, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 22283
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 16, 20, 8, 20, FEWER_FILES),
+                                 ("dt", 16, 20, 8, 20, FEWER_FILES),
+                                 ("dh", 16, 20, 8, 20, FEWER_FILES),
+                                 ("random", 16, 20, 8, 20, FEWER_FILES),
+                             ])
+    def test_fewer(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    dropped = 0
+                    for client in clients:
+                        try:
+                            response = client[1].result()
+                        except requests.exceptions.ConnectionError:
+                            dropped += 1
+                            continue
+                        finally:
+                            client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:285: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_______________________ test_fewer[dh-16-20-8-20-files2] _______________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dh', threads = 16, num_clients = 20, queue_size = 8, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 9864
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 16, 20, 8, 20, FEWER_FILES),
+                                 ("dt", 16, 20, 8, 20, FEWER_FILES),
+                                 ("dh", 16, 20, 8, 20, FEWER_FILES),
+                                 ("random", 16, 20, 8, 20, FEWER_FILES),
+                             ])
+    def test_fewer(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    dropped = 0
+                    for client in clients:
+                        try:
+                            response = client[1].result()
+                        except requests.exceptions.ConnectionError:
+                            dropped += 1
+                            continue
+                        finally:
+                            client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:285: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+______________________ test_equal[dt-32-32-32-20-files5] _______________________
+[gw0] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dt', threads = 32, num_clients = 32, queue_size = 32, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 24103
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 8, 10, EQUAL_FILES),
+                                 ("block", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("block", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dh", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dh", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dt", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dt", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("random", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("random", 16, 12, 16, 20, EQUAL_FILES),
+                             ])
+    def test_equal(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:246: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+______________________ test_equal[dt-16-12-16-20-files6] _______________________
+[gw0] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dt', threads = 16, num_clients = 12, queue_size = 16, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 14133
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 8, 20, 8, 10, EQUAL_FILES),
+                                 ("block", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("block", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dh", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dh", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("dt", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("dt", 16, 12, 16, 20, EQUAL_FILES),
+                                 ("random", 32, 32, 32, 20, EQUAL_FILES),
+                                 ("random", 16, 12, 16, 20, EQUAL_FILES),
+                             ])
+    def test_equal(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    for client in clients:
+                        response = client[1].result()
+                        client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:246: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_____________________ test_fewer[random-16-20-8-20-files3] _____________________
+[gw1] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'random', threads = 16, num_clients = 20, queue_size = 8, times = 20
+files = {'/favicon.ico': [False, None, {'Content-Length': '\\d+', 'Content-Type': 'text/plain', 'Server': 'OS-HW3 Web Server',...ength': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}]}
+server_port = 9979
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size, times, files",
+                             [
+                                 ("block", 16, 20, 8, 20, FEWER_FILES),
+                                 ("dt", 16, 20, 8, 20, FEWER_FILES),
+                                 ("dh", 16, 20, 8, 20, FEWER_FILES),
+                                 ("random", 16, 20, 8, 20, FEWER_FILES),
+                             ])
+    def test_fewer(policy, threads, num_clients, queue_size, times, files, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            for _ in range(times):
+                for file_name, options in files.items():
+                    clients = []
+                    for _ in range(num_clients):
+                        session = FuturesSession()
+                        clients.append((session, session.get(f"http://localhost:{server_port}/{file_name}")))
+                    dropped = 0
+                    for client in clients:
+                        try:
+                            response = client[1].result()
+                        except requests.exceptions.ConnectionError:
+                            dropped += 1
+                            continue
+                        finally:
+                            client[0].close()
+                        expected = options[1]
+                        expected_headers = options[2]
+                        if options[0]:
+>                           validate_response_full(response, expected_headers, expected)
+
+test_segel.py:285: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+__________________________ test_stats[block-4-10-4-4] __________________________
+[gw0] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 4, queue_size = 10, dynamic = 4, static = 4
+server_port = 21086
+
+    @pytest.mark.parametrize("policy, threads, queue_size, dynamic, static",
+                             [
+                                 ("block", 1, 8, 4, 4),
+                                 ("block", 4, 10, 4, 4),
+                                 ("block", 20, 100, 50, 50),
+                                 ("dt", 1, 8, 4, 4),
+                                 ("dt", 4, 10, 4, 4),
+                                 ("dt", 20, 100, 50, 50),
+                                 ("dh", 1, 8, 4, 4),
+                                 ("dh", 4, 10, 4, 4),
+                                 ("dh", 20, 100, 50, 50),
+                                 ("random", 1, 8, 4, 4),
+                                 ("random", 4, 10, 4, 4),
+                                 ("random", 20, 100, 50, 50),
+                             ])
+    def test_stats(policy, threads, queue_size, dynamic, static, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            ask_for = ['/home.html'] * static + ['/output.cgi?0.1'] * dynamic
+            random.shuffle(ask_for)
+            clients = []
+            for i in range(len(ask_for)):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/{ask_for[i]}")))
+                sleep(0.1)
+    
+            threads_stats = {}
+            for i in range(len(ask_for)):
+                response = clients[i][1].result()
+                clients[i][0].close()
+                expected, expected_headers = STATS_FILES[ask_for[i]]
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:468: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+____________________________ test_stats[dt-1-8-4-4] ____________________________
+[gw1] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dt', threads = 1, queue_size = 8, dynamic = 4, static = 4
+server_port = 12363
+
+    @pytest.mark.parametrize("policy, threads, queue_size, dynamic, static",
+                             [
+                                 ("block", 1, 8, 4, 4),
+                                 ("block", 4, 10, 4, 4),
+                                 ("block", 20, 100, 50, 50),
+                                 ("dt", 1, 8, 4, 4),
+                                 ("dt", 4, 10, 4, 4),
+                                 ("dt", 20, 100, 50, 50),
+                                 ("dh", 1, 8, 4, 4),
+                                 ("dh", 4, 10, 4, 4),
+                                 ("dh", 20, 100, 50, 50),
+                                 ("random", 1, 8, 4, 4),
+                                 ("random", 4, 10, 4, 4),
+                                 ("random", 20, 100, 50, 50),
+                             ])
+    def test_stats(policy, threads, queue_size, dynamic, static, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            ask_for = ['/home.html'] * static + ['/output.cgi?0.1'] * dynamic
+            random.shuffle(ask_for)
+            clients = []
+            for i in range(len(ask_for)):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/{ask_for[i]}")))
+                sleep(0.1)
+    
+            threads_stats = {}
+            for i in range(len(ask_for)):
+                response = clients[i][1].result()
+                clients[i][0].close()
+                expected, expected_headers = STATS_FILES[ask_for[i]]
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:468: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+___________________________ test_drop_head[2-14-8-5] ___________________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+threads = 2, num_clients = 14, queue_size = 8, times = 5, server_port = 15412
+
+    @pytest.mark.parametrize("threads, num_clients, queue_size, times",
+                             [
+                                 (2, 14, 8, 5),
+                             ])
+    def test_drop_head(threads, num_clients, queue_size, times, server_port):
+        with Server("./server", server_port, threads, queue_size, "dh") as server:
+            sleep(0.1)
+            for _ in range(times):
+                slowers = []
+                dropped = []
+                alive = []
+                dropped_size = (num_clients - queue_size)
+                for _ in range(threads):
+                    session = FuturesSession()
+                    slowers.append((session, session.get(f"http://localhost:{server_port}/output.cgi?3")))
+                sleep(0.2)
+                for _ in range(dropped_size):
+                    session = FuturesSession()
+                    dropped.append((session, session.get(f"http://localhost:{server_port}/home.html")))
+    
+                sleep(1)
+                for _ in range(num_clients - threads - dropped_size):
+                    session = FuturesSession()
+                    alive.append((session, session.get(f"http://localhost:{server_port}/home.html")))
+    
+                for client in slowers:
+                    response = client[1].result()
+                    client[0].close()
+                    expected = DYNAMIC_OUTPUT_CONTENT.format(seconds="3.0")
+                    expected_headers = generate_dynamic_headers(123, r"\d+", r"\d+", r"\d+")
+>                   validate_response_full(response, expected_headers, expected)
+
+test_segel.py:321: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '123', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 3.0\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+___________________________ test_drop_tail[2-12-8-5] ___________________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+threads = 2, num_clients = 12, queue_size = 8, times = 5, server_port = 8251
+
+    @pytest.mark.parametrize("threads, num_clients, queue_size, times",
+                             [
+                                 (2, 12, 8, 5),
+                             ])
+    def test_drop_tail(threads, num_clients, queue_size, times, server_port):
+        with Server("./server", server_port, threads, queue_size, "dt") as server:
+            sleep(0.1)
+            for _ in range(times):
+                slowers = []
+                alive = []
+                dropped = []
+                alive_size = (queue_size - threads)
+                for _ in range(threads):
+                    session = FuturesSession()
+                    slowers.append((session, session.get(f"http://localhost:{server_port}/output.cgi?3")))
+                sleep(0.2)
+                for _ in range(alive_size):
+                    session = FuturesSession()
+                    alive.append((session, session.get(f"http://localhost:{server_port}/home.html")))
+    
+                sleep(1)
+                for _ in range(num_clients - threads - alive_size):
+                    session = FuturesSession()
+                    dropped.append((session, session.get(f"http://localhost:{server_port}/home.html")))
+    
+                for client in slowers:
+                    response = client[1].result()
+                    client[0].close()
+                    expected = DYNAMIC_OUTPUT_CONTENT.format(seconds="3.0")
+                    expected_headers = generate_dynamic_headers(123, r"\d+", r"\d+", r"\d+")
+>                   validate_response_full(response, expected_headers, expected)
+
+test_segel.py:366: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '123', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 3.0\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+___________________________ test_stats[dt-4-10-4-4] ____________________________
+[gw1] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dt', threads = 4, queue_size = 10, dynamic = 4, static = 4
+server_port = 24399
+
+    @pytest.mark.parametrize("policy, threads, queue_size, dynamic, static",
+                             [
+                                 ("block", 1, 8, 4, 4),
+                                 ("block", 4, 10, 4, 4),
+                                 ("block", 20, 100, 50, 50),
+                                 ("dt", 1, 8, 4, 4),
+                                 ("dt", 4, 10, 4, 4),
+                                 ("dt", 20, 100, 50, 50),
+                                 ("dh", 1, 8, 4, 4),
+                                 ("dh", 4, 10, 4, 4),
+                                 ("dh", 20, 100, 50, 50),
+                                 ("random", 1, 8, 4, 4),
+                                 ("random", 4, 10, 4, 4),
+                                 ("random", 20, 100, 50, 50),
+                             ])
+    def test_stats(policy, threads, queue_size, dynamic, static, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            ask_for = ['/home.html'] * static + ['/output.cgi?0.1'] * dynamic
+            random.shuffle(ask_for)
+            clients = []
+            for i in range(len(ask_for)):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/{ask_for[i]}")))
+                sleep(0.1)
+    
+            threads_stats = {}
+            for i in range(len(ask_for)):
+                response = clients[i][1].result()
+                clients[i][0].close()
+                expected, expected_headers = STATS_FILES[ask_for[i]]
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:468: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 0.1\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+____________________________ test_stats[dh-1-8-4-4] ____________________________
+[gw1] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dh', threads = 1, queue_size = 8, dynamic = 4, static = 4
+server_port = 9761
+
+    @pytest.mark.parametrize("policy, threads, queue_size, dynamic, static",
+                             [
+                                 ("block", 1, 8, 4, 4),
+                                 ("block", 4, 10, 4, 4),
+                                 ("block", 20, 100, 50, 50),
+                                 ("dt", 1, 8, 4, 4),
+                                 ("dt", 4, 10, 4, 4),
+                                 ("dt", 20, 100, 50, 50),
+                                 ("dh", 1, 8, 4, 4),
+                                 ("dh", 4, 10, 4, 4),
+                                 ("dh", 20, 100, 50, 50),
+                                 ("random", 1, 8, 4, 4),
+                                 ("random", 4, 10, 4, 4),
+                                 ("random", 20, 100, 50, 50),
+                             ])
+    def test_stats(policy, threads, queue_size, dynamic, static, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            ask_for = ['/home.html'] * static + ['/output.cgi?0.1'] * dynamic
+            random.shuffle(ask_for)
+            clients = []
+            for i in range(len(ask_for)):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/{ask_for[i]}")))
+                sleep(0.1)
+    
+            threads_stats = {}
+            for i in range(len(ask_for)):
+                response = clients[i][1].result()
+                clients[i][0].close()
+                expected, expected_headers = STATS_FILES[ask_for[i]]
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:468: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+__________________________ test_stats[block-1-8-4-4] ___________________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 1, queue_size = 8, dynamic = 4, static = 4
+server_port = 14376
+
+    @pytest.mark.parametrize("policy, threads, queue_size, dynamic, static",
+                             [
+                                 ("block", 1, 8, 4, 4),
+                                 ("block", 4, 10, 4, 4),
+                                 ("block", 20, 100, 50, 50),
+                                 ("dt", 1, 8, 4, 4),
+                                 ("dt", 4, 10, 4, 4),
+                                 ("dt", 20, 100, 50, 50),
+                                 ("dh", 1, 8, 4, 4),
+                                 ("dh", 4, 10, 4, 4),
+                                 ("dh", 20, 100, 50, 50),
+                                 ("random", 1, 8, 4, 4),
+                                 ("random", 4, 10, 4, 4),
+                                 ("random", 20, 100, 50, 50),
+                             ])
+    def test_stats(policy, threads, queue_size, dynamic, static, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            ask_for = ['/home.html'] * static + ['/output.cgi?0.1'] * dynamic
+            random.shuffle(ask_for)
+            clients = []
+            for i in range(len(ask_for)):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/{ask_for[i]}")))
+                sleep(0.1)
+    
+            threads_stats = {}
+            for i in range(len(ask_for)):
+                response = clients[i][1].result()
+                clients[i][0].close()
+                expected, expected_headers = STATS_FILES[ask_for[i]]
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:468: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 0.1\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+__________________________ test_stats[random-1-8-4-4] __________________________
+[gw1] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'random', threads = 1, queue_size = 8, dynamic = 4, static = 4
+server_port = 13721
+
+    @pytest.mark.parametrize("policy, threads, queue_size, dynamic, static",
+                             [
+                                 ("block", 1, 8, 4, 4),
+                                 ("block", 4, 10, 4, 4),
+                                 ("block", 20, 100, 50, 50),
+                                 ("dt", 1, 8, 4, 4),
+                                 ("dt", 4, 10, 4, 4),
+                                 ("dt", 20, 100, 50, 50),
+                                 ("dh", 1, 8, 4, 4),
+                                 ("dh", 4, 10, 4, 4),
+                                 ("dh", 20, 100, 50, 50),
+                                 ("random", 1, 8, 4, 4),
+                                 ("random", 4, 10, 4, 4),
+                                 ("random", 20, 100, 50, 50),
+                             ])
+    def test_stats(policy, threads, queue_size, dynamic, static, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            ask_for = ['/home.html'] * static + ['/output.cgi?0.1'] * dynamic
+            random.shuffle(ask_for)
+            clients = []
+            for i in range(len(ask_for)):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/{ask_for[i]}")))
+                sleep(0.1)
+    
+            threads_stats = {}
+            for i in range(len(ask_for)):
+                response = clients[i][1].result()
+                clients[i][0].close()
+                expected, expected_headers = STATS_FILES[ask_for[i]]
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:468: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+__________________________ test_drop_random[2-12-8-5] __________________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+threads = 2, num_clients = 12, queue_size = 8, times = 5, server_port = 13842
+
+    @pytest.mark.parametrize("threads, num_clients, queue_size, times",
+                             [
+                                 (2, 12, 8, 5),
+                             ])
+    def test_drop_random(threads, num_clients, queue_size, times, server_port):
+        with Server("./server", server_port, threads, queue_size, "random") as server:
+            sleep(0.1)
+            for _ in range(times):
+                slowers = []
+                others = []
+                for _ in range(threads):
+                    session = FuturesSession()
+                    slowers.append((session, session.get(f"http://localhost:{server_port}/output.cgi?2")))
+                sleep(0.5)
+                in_queue = 0
+                expected_drop = 0
+                for _ in range(num_clients - threads):
+                    if threads + in_queue >= queue_size:
+                        temp_in_queue=in_queue
+                        in_queue -= random_drop_formula(queue_size, temp_in_queue)
+                        expected_drop += random_drop_formula(queue_size, temp_in_queue)
+                    session = FuturesSession()
+                    others.append((session, session.get(f"http://localhost:{server_port}/home.html")))
+                    in_queue += 1
+    
+                for client in slowers:
+                    response = client[1].result()
+                    client[0].close()
+                    expected = DYNAMIC_OUTPUT_CONTENT.format(seconds="2.0")
+                    expected_headers = generate_dynamic_headers(123, r"\d+", r"\d+", r"\d+")
+>                   validate_response_full(response, expected_headers, expected)
+
+test_segel.py:411: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '123', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 2.0\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+_________________________ test_stats[random-4-10-4-4] __________________________
+[gw1] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'random', threads = 4, queue_size = 10, dynamic = 4, static = 4
+server_port = 9083
+
+    @pytest.mark.parametrize("policy, threads, queue_size, dynamic, static",
+                             [
+                                 ("block", 1, 8, 4, 4),
+                                 ("block", 4, 10, 4, 4),
+                                 ("block", 20, 100, 50, 50),
+                                 ("dt", 1, 8, 4, 4),
+                                 ("dt", 4, 10, 4, 4),
+                                 ("dt", 20, 100, 50, 50),
+                                 ("dh", 1, 8, 4, 4),
+                                 ("dh", 4, 10, 4, 4),
+                                 ("dh", 20, 100, 50, 50),
+                                 ("random", 1, 8, 4, 4),
+                                 ("random", 4, 10, 4, 4),
+                                 ("random", 20, 100, 50, 50),
+                             ])
+    def test_stats(policy, threads, queue_size, dynamic, static, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            ask_for = ['/home.html'] * static + ['/output.cgi?0.1'] * dynamic
+            random.shuffle(ask_for)
+            clients = []
+            for i in range(len(ask_for)):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/{ask_for[i]}")))
+                sleep(0.1)
+    
+            threads_stats = {}
+            for i in range(len(ask_for)):
+                response = clients[i][1].result()
+                clients[i][0].close()
+                expected, expected_headers = STATS_FILES[ask_for[i]]
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:468: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 0.1\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+___________________________ test_stats[dh-4-10-4-4] ____________________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dh', threads = 4, queue_size = 10, dynamic = 4, static = 4
+server_port = 16668
+
+    @pytest.mark.parametrize("policy, threads, queue_size, dynamic, static",
+                             [
+                                 ("block", 1, 8, 4, 4),
+                                 ("block", 4, 10, 4, 4),
+                                 ("block", 20, 100, 50, 50),
+                                 ("dt", 1, 8, 4, 4),
+                                 ("dt", 4, 10, 4, 4),
+                                 ("dt", 20, 100, 50, 50),
+                                 ("dh", 1, 8, 4, 4),
+                                 ("dh", 4, 10, 4, 4),
+                                 ("dh", 20, 100, 50, 50),
+                                 ("random", 1, 8, 4, 4),
+                                 ("random", 4, 10, 4, 4),
+                                 ("random", 20, 100, 50, 50),
+                             ])
+    def test_stats(policy, threads, queue_size, dynamic, static, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            ask_for = ['/home.html'] * static + ['/output.cgi?0.1'] * dynamic
+            random.shuffle(ask_for)
+            clients = []
+            for i in range(len(ask_for)):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/{ask_for[i]}")))
+                sleep(0.1)
+    
+            threads_stats = {}
+            for i in range(len(ask_for)):
+                response = clients[i][1].result()
+                clients[i][0].close()
+                expected, expected_headers = STATS_FILES[ask_for[i]]
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:468: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 0.1\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+_____________________ test_stats_dispatch_time[dt-2-4-10] ______________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dt', threads = 2, num_clients = 4, queue_size = 10
+server_port = 26267
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size",
+                             [
+                                 ("block", 2, 4, 10),
+                                 ("dt", 2, 4, 10),
+                                 ("dh", 2, 4, 10),
+                                 ("random", 2, 4, 10),
+                             ])
+    def test_stats_dispatch_time(policy, threads, num_clients, queue_size, server_port):
+        """dispatch time should be greater than 1 secs when sending 1sec 4 dynamic requests. the server only has 2 worker threads."""
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            clients = []
+            for _ in range(num_clients):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/output.cgi?1")))
+    
+            dispatches = []
+            for client in clients:
+                response = client[1].result()
+                client[0].close()
+                expected = DYNAMIC_OUTPUT_CONTENT.format(seconds="1.0")
+                expected_headers = generate_dynamic_headers(123, r"\d+", 0, r"\d+")
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:502: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '123', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 1.0\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+____________________ test_stats_dispatch_time[block-2-4-10] ____________________
+[gw1] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 2, num_clients = 4, queue_size = 10
+server_port = 25872
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size",
+                             [
+                                 ("block", 2, 4, 10),
+                                 ("dt", 2, 4, 10),
+                                 ("dh", 2, 4, 10),
+                                 ("random", 2, 4, 10),
+                             ])
+    def test_stats_dispatch_time(policy, threads, num_clients, queue_size, server_port):
+        """dispatch time should be greater than 1 secs when sending 1sec 4 dynamic requests. the server only has 2 worker threads."""
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            clients = []
+            for _ in range(num_clients):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/output.cgi?1")))
+    
+            dispatches = []
+            for client in clients:
+                response = client[1].result()
+                client[0].close()
+                expected = DYNAMIC_OUTPUT_CONTENT.format(seconds="1.0")
+                expected_headers = generate_dynamic_headers(123, r"\d+", 0, r"\d+")
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:502: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '123', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 1.0\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+___________________ test_stats_dispatch_time[random-2-4-10] ____________________
+[gw3] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'random', threads = 2, num_clients = 4, queue_size = 10
+server_port = 12528
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size",
+                             [
+                                 ("block", 2, 4, 10),
+                                 ("dt", 2, 4, 10),
+                                 ("dh", 2, 4, 10),
+                                 ("random", 2, 4, 10),
+                             ])
+    def test_stats_dispatch_time(policy, threads, num_clients, queue_size, server_port):
+        """dispatch time should be greater than 1 secs when sending 1sec 4 dynamic requests. the server only has 2 worker threads."""
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            clients = []
+            for _ in range(num_clients):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/output.cgi?1")))
+    
+            dispatches = []
+            for client in clients:
+                response = client[1].result()
+                client[0].close()
+                expected = DYNAMIC_OUTPUT_CONTENT.format(seconds="1.0")
+                expected_headers = generate_dynamic_headers(123, r"\d+", 0, r"\d+")
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:502: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '123', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 1.0\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+_____________________ test_stats_dispatch_time[dh-2-4-10] ______________________
+[gw1] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dh', threads = 2, num_clients = 4, queue_size = 10
+server_port = 22110
+
+    @pytest.mark.parametrize("policy, threads, num_clients, queue_size",
+                             [
+                                 ("block", 2, 4, 10),
+                                 ("dt", 2, 4, 10),
+                                 ("dh", 2, 4, 10),
+                                 ("random", 2, 4, 10),
+                             ])
+    def test_stats_dispatch_time(policy, threads, num_clients, queue_size, server_port):
+        """dispatch time should be greater than 1 secs when sending 1sec 4 dynamic requests. the server only has 2 worker threads."""
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            clients = []
+            for _ in range(num_clients):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/output.cgi?1")))
+    
+            dispatches = []
+            for client in clients:
+                response = client[1].result()
+                client[0].close()
+                expected = DYNAMIC_OUTPUT_CONTENT.format(seconds="1.0")
+                expected_headers = generate_dynamic_headers(123, r"\d+", 0, r"\d+")
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:502: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '123', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 1.0\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+________________________ test_stats[block-20-100-50-50] ________________________
+[gw0] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'block', threads = 20, queue_size = 100, dynamic = 50, static = 50
+server_port = 11356
+
+    @pytest.mark.parametrize("policy, threads, queue_size, dynamic, static",
+                             [
+                                 ("block", 1, 8, 4, 4),
+                                 ("block", 4, 10, 4, 4),
+                                 ("block", 20, 100, 50, 50),
+                                 ("dt", 1, 8, 4, 4),
+                                 ("dt", 4, 10, 4, 4),
+                                 ("dt", 20, 100, 50, 50),
+                                 ("dh", 1, 8, 4, 4),
+                                 ("dh", 4, 10, 4, 4),
+                                 ("dh", 20, 100, 50, 50),
+                                 ("random", 1, 8, 4, 4),
+                                 ("random", 4, 10, 4, 4),
+                                 ("random", 20, 100, 50, 50),
+                             ])
+    def test_stats(policy, threads, queue_size, dynamic, static, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            ask_for = ['/home.html'] * static + ['/output.cgi?0.1'] * dynamic
+            random.shuffle(ask_for)
+            clients = []
+            for i in range(len(ask_for)):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/{ask_for[i]}")))
+                sleep(0.1)
+    
+            threads_stats = {}
+            for i in range(len(ask_for)):
+                response = clients[i][1].result()
+                clients[i][0].close()
+                expected, expected_headers = STATS_FILES[ask_for[i]]
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:468: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_________________________ test_stats[dh-20-100-50-50] __________________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dh', threads = 20, queue_size = 100, dynamic = 50, static = 50
+server_port = 9015
+
+    @pytest.mark.parametrize("policy, threads, queue_size, dynamic, static",
+                             [
+                                 ("block", 1, 8, 4, 4),
+                                 ("block", 4, 10, 4, 4),
+                                 ("block", 20, 100, 50, 50),
+                                 ("dt", 1, 8, 4, 4),
+                                 ("dt", 4, 10, 4, 4),
+                                 ("dt", 20, 100, 50, 50),
+                                 ("dh", 1, 8, 4, 4),
+                                 ("dh", 4, 10, 4, 4),
+                                 ("dh", 20, 100, 50, 50),
+                                 ("random", 1, 8, 4, 4),
+                                 ("random", 4, 10, 4, 4),
+                                 ("random", 20, 100, 50, 50),
+                             ])
+    def test_stats(policy, threads, queue_size, dynamic, static, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            ask_for = ['/home.html'] * static + ['/output.cgi?0.1'] * dynamic
+            random.shuffle(ask_for)
+            clients = []
+            for i in range(len(ask_for)):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/{ask_for[i]}")))
+                sleep(0.1)
+    
+            threads_stats = {}
+            for i in range(len(ask_for)):
+                response = clients[i][1].result()
+                clients[i][0].close()
+                expected, expected_headers = STATS_FILES[ask_for[i]]
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:468: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-length': '\\d+', 'Content-type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<p>Welcome to the CGI program<\\/p>[\\r\\n]+<p>My only purpose is to waste time on the server!<\\/p>[\\r\\n]+<p>I spun for 0.1\\d seconds<\\/p>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic', 'Content-length', 'Content-type']
+E       Got:
+E       ['Server', 'Content-length', 'Content-type']
+
+utils.py:61: AssertionError
+_________________________ test_stats[dt-20-100-50-50] __________________________
+[gw0] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'dt', threads = 20, queue_size = 100, dynamic = 50, static = 50
+server_port = 25050
+
+    @pytest.mark.parametrize("policy, threads, queue_size, dynamic, static",
+                             [
+                                 ("block", 1, 8, 4, 4),
+                                 ("block", 4, 10, 4, 4),
+                                 ("block", 20, 100, 50, 50),
+                                 ("dt", 1, 8, 4, 4),
+                                 ("dt", 4, 10, 4, 4),
+                                 ("dt", 20, 100, 50, 50),
+                                 ("dh", 1, 8, 4, 4),
+                                 ("dh", 4, 10, 4, 4),
+                                 ("dh", 20, 100, 50, 50),
+                                 ("random", 1, 8, 4, 4),
+                                 ("random", 4, 10, 4, 4),
+                                 ("random", 20, 100, 50, 50),
+                             ])
+    def test_stats(policy, threads, queue_size, dynamic, static, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            ask_for = ['/home.html'] * static + ['/output.cgi?0.1'] * dynamic
+            random.shuffle(ask_for)
+            clients = []
+            for i in range(len(ask_for)):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/{ask_for[i]}")))
+                sleep(0.1)
+    
+            threads_stats = {}
+            for i in range(len(ask_for)):
+                response = clients[i][1].result()
+                clients[i][0].close()
+                expected, expected_headers = STATS_FILES[ask_for[i]]
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:468: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+_______________________ test_stats[random-20-100-50-50] ________________________
+[gw2] linux -- Python 3.11.3 /usr/bin/python3
+
+policy = 'random', threads = 20, queue_size = 100, dynamic = 50, static = 50
+server_port = 13328
+
+    @pytest.mark.parametrize("policy, threads, queue_size, dynamic, static",
+                             [
+                                 ("block", 1, 8, 4, 4),
+                                 ("block", 4, 10, 4, 4),
+                                 ("block", 20, 100, 50, 50),
+                                 ("dt", 1, 8, 4, 4),
+                                 ("dt", 4, 10, 4, 4),
+                                 ("dt", 20, 100, 50, 50),
+                                 ("dh", 1, 8, 4, 4),
+                                 ("dh", 4, 10, 4, 4),
+                                 ("dh", 20, 100, 50, 50),
+                                 ("random", 1, 8, 4, 4),
+                                 ("random", 4, 10, 4, 4),
+                                 ("random", 20, 100, 50, 50),
+                             ])
+    def test_stats(policy, threads, queue_size, dynamic, static, server_port):
+        with Server("./server", server_port, threads, queue_size, policy) as server:
+            sleep(0.1)
+            ask_for = ['/home.html'] * static + ['/output.cgi?0.1'] * dynamic
+            random.shuffle(ask_for)
+            clients = []
+            for i in range(len(ask_for)):
+                session = FuturesSession()
+                clients.append((session, session.get(f"http://localhost:{server_port}/{ask_for[i]}")))
+                sleep(0.1)
+    
+            threads_stats = {}
+            for i in range(len(ask_for)):
+                response = clients[i][1].result()
+                clients[i][0].close()
+                expected, expected_headers = STATS_FILES[ask_for[i]]
+>               validate_response_full(response, expected_headers, expected)
+
+test_segel.py:468: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+response = <Response [200]>
+expected_headers = {'Content-Length': '\\d+', 'Content-Type': 'text/html', 'Server': 'OS-HW3 Web Server', 'Stat-Req-Arrival': '\\: \\d+.\\d+', ...}
+expected = '<html>[\\r\\n]+<head>[\\r\\n]+  <title>OS-HW3 Test Web Page<\\/title>[\\r\\n]+<\\/head>[\\r\\n]+<body>[\\r\\n]+<h2> O...Qw4w9WgXcQ\\"> here<\\/a> for something[\\r\\n]+even more awesome.<\\/p>[\\r\\n]+<\\/body>[\\r\\n]+<\\/html>[\\r\\n]+$'
+
+    def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
+        assert response.status_code == 200
+>       assert response.headers.keys() == expected_headers.keys(),\
+            f"\nExpected:\n{list(expected_headers.keys())}"\
+            f"\nGot:\n{list(response.headers.keys())}"
+E       AssertionError: 
+E       Expected:
+E       ['Server', 'Content-Length', 'Content-Type', 'Stat-Req-Arrival', 'Stat-Req-Dispatch', 'Stat-Thread-Id', 'Stat-Thread-Count', 'Stat-Thread-Static', 'Stat-Thread-Dynamic']
+E       Got:
+E       ['Server', 'Content-Length', 'Content-Type']
+
+utils.py:61: AssertionError
+=========================== short test summary info ============================
+FAILED test_segel.py::test_single[dt-1-25-30-20-files2] - AssertionError: 
+FAILED test_segel.py::test_single[random-1-25-30-20-files3] - AssertionError: 
+FAILED test_segel.py::test_light[block-20-5-10-20-files0] - AssertionError: 
+FAILED test_segel.py::test_light[block-16-4-32-30-files1] - AssertionError: 
+FAILED test_segel.py::test_single[block-1-25-30-20-files0] - AssertionError: 
+FAILED test_segel.py::test_light[dh-20-5-10-20-files2] - AssertionError: 
+FAILED test_segel.py::test_single[dh-1-25-30-20-files1] - AssertionError: 
+FAILED test_segel.py::test_light[dh-16-4-32-30-files3] - AssertionError: 
+FAILED test_segel.py::test_locks[block-8-20-16-20-files0] - AssertionError: 
+FAILED test_segel.py::test_light[dt-20-5-10-20-files4] - AssertionError: 
+FAILED test_segel.py::test_light[dt-16-4-32-30-files5] - AssertionError: 
+FAILED test_segel.py::test_locks[block-32-40-64-10-files1] - AssertionError: 
+FAILED test_segel.py::test_light[random-20-5-10-20-files6] - AssertionError: 
+FAILED test_segel.py::test_locks[block-64-50-128-6-files2] - AssertionError: 
+FAILED test_segel.py::test_light[random-16-4-32-30-files7] - AssertionError: 
+FAILED test_segel.py::test_locks[block-25-20-27-20-files3] - AssertionError: 
+FAILED test_segel.py::test_locks[dt-32-40-64-10-files4] - AssertionError: 
+FAILED test_segel.py::test_locks[dh-64-50-128-6-files8] - AssertionError: 
+FAILED test_segel.py::test_locks[dt-64-50-128-6-files5] - AssertionError: 
+FAILED test_segel.py::test_locks[dh-25-20-27-20-files9] - AssertionError: 
+FAILED test_segel.py::test_locks[dt-25-20-27-20-files6] - AssertionError: 
+FAILED test_segel.py::test_locks[random-32-40-64-10-files10] - AssertionError: 
+FAILED test_segel.py::test_locks[dh-32-40-64-10-files7] - AssertionError: 
+FAILED test_segel.py::test_locks[random-64-50-128-6-files11] - AssertionError: 
+FAILED test_segel.py::test_equal[block-32-32-32-20-files1] - AssertionError: 
+FAILED test_segel.py::test_locks[random-25-20-27-20-files12] - AssertionError: 
+FAILED test_segel.py::test_equal[block-16-12-16-20-files2] - AssertionError: 
+FAILED test_segel.py::test_equal[block-8-20-8-10-files0] - AssertionError: 
+FAILED test_segel.py::test_equal[dh-32-32-32-20-files3] - AssertionError: 
+FAILED test_segel.py::test_equal[random-32-32-32-20-files7] - AssertionError: 
+FAILED test_segel.py::test_equal[dh-16-12-16-20-files4] - AssertionError: 
+FAILED test_segel.py::test_equal[random-16-12-16-20-files8] - AssertionError: 
+FAILED test_segel.py::test_fewer[block-16-20-8-20-files0] - AssertionError: 
+FAILED test_segel.py::test_fewer[dt-16-20-8-20-files1] - AssertionError: 
+FAILED test_segel.py::test_fewer[dh-16-20-8-20-files2] - AssertionError: 
+FAILED test_segel.py::test_equal[dt-32-32-32-20-files5] - AssertionError: 
+FAILED test_segel.py::test_equal[dt-16-12-16-20-files6] - AssertionError: 
+FAILED test_segel.py::test_fewer[random-16-20-8-20-files3] - AssertionError: 
+FAILED test_segel.py::test_stats[block-4-10-4-4] - AssertionError: 
+FAILED test_segel.py::test_stats[dt-1-8-4-4] - AssertionError: 
+FAILED test_segel.py::test_drop_head[2-14-8-5] - AssertionError: 
+FAILED test_segel.py::test_drop_tail[2-12-8-5] - AssertionError: 
+FAILED test_segel.py::test_stats[dt-4-10-4-4] - AssertionError: 
+FAILED test_segel.py::test_stats[dh-1-8-4-4] - AssertionError: 
+FAILED test_segel.py::test_stats[block-1-8-4-4] - AssertionError: 
+FAILED test_segel.py::test_stats[random-1-8-4-4] - AssertionError: 
+FAILED test_segel.py::test_drop_random[2-12-8-5] - AssertionError: 
+FAILED test_segel.py::test_stats[random-4-10-4-4] - AssertionError: 
+FAILED test_segel.py::test_stats[dh-4-10-4-4] - AssertionError: 
+FAILED test_segel.py::test_stats_dispatch_time[dt-2-4-10] - AssertionError: 
+FAILED test_segel.py::test_stats_dispatch_time[block-2-4-10] - AssertionError: 
+FAILED test_segel.py::test_stats_dispatch_time[random-2-4-10] - AssertionError: 
+FAILED test_segel.py::test_stats_dispatch_time[dh-2-4-10] - AssertionError: 
+FAILED test_segel.py::test_stats[block-20-100-50-50] - AssertionError: 
+FAILED test_segel.py::test_stats[dh-20-100-50-50] - AssertionError: 
+FAILED test_segel.py::test_stats[dt-20-100-50-50] - AssertionError: 
+FAILED test_segel.py::test_stats[random-20-100-50-50] - AssertionError: 
+======================== 57 failed, 20 passed in 30.21s ========================

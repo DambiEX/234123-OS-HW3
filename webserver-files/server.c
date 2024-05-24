@@ -10,6 +10,11 @@
 #define BLOCK_FLUSH "block_flush"
 #define DROP_RANDOM "drop_random"
 
+struct Req{
+    int connfd;
+    struct timeval arrival_time; 
+} * req;
+
 int *requests_buffer, buf_end, buf_start, queue_size, max_queue_size, handled_reqs_num;
 pthread_mutex_t buf_lock;
 pthread_cond_t buf_cond, master_cond;
@@ -132,7 +137,18 @@ void* worker_routine(void* args)
         connfd = pop_buffer(max_queue_size);
         pthread_mutex_unlock(&buf_lock);
         fprintf(stderr, "worker. popped. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
-        requestHandle(connfd);
+        
+        //----------------------STATISTICS HANDLING PART--------------------//
+
+        struct Threads_stats tstats;
+
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+
+        //---------------------THE REQUEST----------------------------------//
+
+        requestHandle(connfd, tv, tv, &tstats);
+
         fprintf(stderr, "worker. handled. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
         Close(connfd);
         pthread_mutex_lock(&buf_lock);

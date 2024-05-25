@@ -2,8 +2,8 @@
 #include "request.h"
 #define ARG_MAX_LEN 10
 #define SAFETY_MARGIN 10
-#define NULL_REQUEST -1
-#define END_OF_BUFFER -2
+#define NULL_REQUEST {-1,0}
+#define END_OF_BUFFER {-2,0}
 #define BLOCK "block"
 #define DROP_TAIL "drop_tail"
 #define DROP_HEAD "drop_head"
@@ -11,11 +11,12 @@
 #define DROP_RANDOM "drop_random"
 
 struct Req{
-    int connfd;
+    int fd;
     struct timeval arrival_time; 
-} * req;
+};
 
-int *requests_buffer, buf_end, buf_start, queue_size, max_queue_size, handled_reqs_num;
+struct Req *requests_buffer;
+int buf_end, buf_start, queue_size, max_queue_size, handled_reqs_num;
 pthread_mutex_t buf_lock;
 pthread_cond_t buf_cond, master_cond;
 
@@ -50,12 +51,14 @@ void getargs(int *port, int *num_threads, int *max_q_size, char *sched_alg[], in
     *sched_alg = argv[4];
 }
 
-void initialize_buffer(int size, int* buffer)
+void initialize_buffer(int size, struct Req* buffer)
 {
-    buffer[size] = END_OF_BUFFER;
+    struct Req null_req = NULL_REQUEST;
+    struct Req end_of_buffer = END_OF_BUFFER;
+    buffer[size] = end_of_buffer;
     for (size_t i = 0; i < size; i++)
     {
-        buffer[i] = NULL_REQUEST;
+        buffer[i] = null_req;
     }
 }
 
@@ -66,7 +69,7 @@ void init_global_vars(int max_q_size)
     queue_size = 0;
     handled_reqs_num = 0;
     max_queue_size = max_q_size;
-    requests_buffer = malloc(max_q_size + SAFETY_MARGIN);
+    requests_buffer = malloc((sizeof(struct Req))*(max_q_size + SAFETY_MARGIN));
     initialize_buffer(max_q_size, requests_buffer);
 }
 
@@ -80,27 +83,27 @@ void init_buf_lock()
 
 //-----------------------------------------------BUFFER ACTIONS----------------------------------------//
 
-void push_buffer(int connfd, void (*sched_func)(int connfd))
+void push_buffer(struct Req request, void (*sched_func)(struct Req))
 {
     fprintf(stderr, "push buffer. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
     pthread_mutex_lock(&buf_lock);
     fprintf(stderr, "push buffer. entered lock \n");
     if (queue_is_full())  // only add request if there is room in queue
     {
-        sched_func(connfd);
+        sched_func(request);
         return;
     }
     buf_end = (buf_end + 1) % max_queue_size; // cyclic queue since we are removing the oldest request every time
-    requests_buffer[buf_end] = connfd; // push to cyclic queue
+    requests_buffer[buf_end] = request; // push to cyclic queue
     queue_size++;
     pthread_cond_signal(&buf_cond);
     pthread_mutex_unlock(&buf_lock);    
 }
 
-int pop_buffer()
+struct Req pop_buffer()
 {
     fprintf(stderr, "worker. pop buffer. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
-    int connfd;
+    struct Req req;
     
     while (queue_size == 0)
     {
@@ -108,21 +111,21 @@ int pop_buffer()
         pthread_cond_wait(&buf_cond, &buf_lock);
     }
     buf_start = (buf_start + 1) % max_queue_size; 
-    connfd = requests_buffer[buf_start]; // remove from start of cyclic queue
+    req = requests_buffer[buf_start]; // remove from start of cyclic queue
     queue_size--;
     handled_reqs_num++;
-    return connfd;
+    return req;
 }
 
 void pop_index(int index)
 {
     //called when locked
-    int connfd_to_remove = requests_buffer[index];
+    struct Req req_to_remove = requests_buffer[index];
     for (int i = index; i > buf_start; i--)
     {
         requests_buffer[i] = requests_buffer[i-1]; 
     }    
-    requests_buffer[buf_start] = connfd_to_remove;
+    requests_buffer[buf_start] = req_to_remove;
     
     pop_buffer();
 }
@@ -131,10 +134,10 @@ void pop_index(int index)
 
 void* worker_routine(void* args)
 {
-    int connfd;
+    struct Req req;
     while (1){
         pthread_mutex_lock(&buf_lock);
-        connfd = pop_buffer(max_queue_size);
+        req = pop_buffer(max_queue_size);
         pthread_mutex_unlock(&buf_lock);
         fprintf(stderr, "worker. popped. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
         
@@ -142,15 +145,15 @@ void* worker_routine(void* args)
 
         struct Threads_stats tstats;
 
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
+        struct timeval dispatch;
+        gettimeofday(&dispatch, NULL);
 
         //---------------------THE REQUEST----------------------------------//
 
-        requestHandle(connfd, tv, tv, &tstats);
+        requestHandle(req.fd, req.arrival_time, dispatch, &tstats);
 
         fprintf(stderr, "worker. handled. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
-        Close(connfd);
+        Close(req.fd);
         pthread_mutex_lock(&buf_lock);
         if (queue_is_full())
         {
@@ -184,11 +187,11 @@ int create_worker_threads(int num_threads)
 
 //--------------------------------------------SCHEDULING ALGORITHMS-------------------------------//
 
-void master_block_and_wait(int connfd);
-void drop_tail(int connfd);
-void drop_head(int new_connfd);
-void block_flush(int connfd);
-void drop_random(int connfd);
+void master_block_and_wait(struct Req req);
+void drop_tail(struct Req req);
+void drop_head(struct Req req);
+void block_flush(struct Req req);
+void drop_random(struct Req req);
 void* parse_sched_alg(char* sched_alg_string)
 {
    if (!strcmp(sched_alg_string, BLOCK))
@@ -222,7 +225,7 @@ void* parse_sched_alg(char* sched_alg_string)
 
 //------------------all of these functions are called while holding mutex.------------------//
 
-void master_block_and_wait(int connfd)
+void master_block_and_wait(struct Req req)
 {
     while (queue_is_full())
     {
@@ -230,37 +233,37 @@ void master_block_and_wait(int connfd)
         pthread_cond_wait(&master_cond, &buf_lock);  // the master thread must block and wait if the queue is full
     }
     pthread_mutex_unlock(&buf_lock);
-    push_buffer(connfd, master_block_and_wait);
+    push_buffer(req, master_block_and_wait);
 }
 
-void drop_tail(int connfd)
+void drop_tail(struct Req req)
 {
-    Close(connfd);
+    Close(req.fd);
     pthread_mutex_unlock(&buf_lock);
 }
 
-void drop_head(int new_connfd)
+void drop_head(struct Req req)
 {
     handled_reqs_num--; // needed because the popping increments it by 1. should be done while locked.
     // pthread_mutex_unlock(&buf_lock); // note: unlock of unlocked mutex is undefined!
-    int old_connfd = pop_buffer(max_queue_size);
+    struct Req old_req = pop_buffer();
     pthread_mutex_unlock(&buf_lock);
-    Close(old_connfd);
-    push_buffer(new_connfd, drop_head);
+    Close(old_req.fd);
+    push_buffer(req, drop_head);
 }
 
-void block_flush(int connfd)
+void block_flush(struct Req req)
 {
     while (handled_reqs_num == 0)
     {
         fprintf(stderr, "master block until queue is empty. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
         pthread_cond_wait(&master_cond, &buf_lock);  // the master thread must block and wait until the queue is empty
     }
-    Close(connfd);
+    Close(req.fd);
     pthread_mutex_unlock(&buf_lock);
 }
 
-void drop_random(int connfd)
+void drop_random(struct Req req)
 {
     int half_size = (handled_reqs_num % 2 == 0) ? handled_reqs_num/2 : handled_reqs_num/2 + 1;
     int curr_size = handled_reqs_num;
@@ -271,7 +274,7 @@ void drop_random(int connfd)
         // swap_reqs(rand_index, curr_size-1);
     }
     pthread_mutex_unlock(&buf_lock);
-    push_buffer(connfd, drop_random);
+    push_buffer(req, drop_random);
 }
 
 //-----------------------------------------------MAIN----------------------------------------//
@@ -293,7 +296,10 @@ int main(int argc, char *argv[])
     while (1) {
 	clientlen = sizeof(clientaddr);
 	connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen); //should stay in main thread
-    push_buffer(connfd, sched_func);
+    struct timeval arrival;
+    gettimeofday(&arrival, NULL);
+    struct Req req = {connfd, arrival};
+    push_buffer(req, sched_func);
     }
     free (requests_buffer);
 }

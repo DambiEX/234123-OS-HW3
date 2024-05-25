@@ -52,17 +52,6 @@ void getargs(int *port, int *num_threads, int *max_q_size, char *sched_alg[], in
     *sched_alg = argv[4];
 }
 
-void initialize_buffer(int size, struct Req* buffer)
-{
-    struct Req null_req = NULL_REQUEST;
-    struct Req end_of_buffer = END_OF_BUFFER;
-    buffer[size] = end_of_buffer;
-    for (size_t i = 0; i < size; i++)
-    {
-        buffer[i] = null_req;
-    }
-}
-
 void init_global_vars(int max_q_size)
 {
     buf_start = 0;
@@ -71,7 +60,6 @@ void init_global_vars(int max_q_size)
     handled_reqs_num = 0;
     max_queue_size = max_q_size;
     requests_buffer = malloc((sizeof(struct Req))*(max_q_size + SAFETY_MARGIN));
-    initialize_buffer(max_q_size, requests_buffer);
 }
 
 void init_buf_lock()
@@ -107,11 +95,6 @@ struct Req pop_buffer()
     struct Req req;
     struct timeval dispatch;
     
-    while (queue_size == 0)
-    {
-        // fprintf(stderr, "worker. queue size == 0. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
-        pthread_cond_wait(&buf_cond, &buf_lock);
-    }
     gettimeofday(&dispatch, NULL);
     req = requests_buffer[buf_start]; // remove from start of cyclic queue
     buf_start = (buf_start + 1) % max_queue_size; 
@@ -134,7 +117,8 @@ void pop_index(int index)
     }    
     requests_buffer[buf_start] = req_to_remove;
     
-    pop_buffer();
+    req_to_remove = pop_buffer();
+    Close(req_to_remove.fd);
 }
 
 //-----------------------------------------------MULTI THREADING----------------------------------------//
@@ -147,7 +131,12 @@ void* worker_routine(void* args)
     struct Req req;
     while (1){
         pthread_mutex_lock(&buf_lock);
-        req = pop_buffer(max_queue_size);
+        while (queue_size == 0)
+        {
+            // fprintf(stderr, "worker. queue size == 0. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
+            pthread_cond_wait(&buf_cond, &buf_lock);
+        }
+        req = pop_buffer();
         pthread_mutex_unlock(&buf_lock);
         // fprintf(stderr, "worker. popped. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
         
@@ -258,7 +247,7 @@ void drop_head(struct Req req)
 
 void block_flush(struct Req req)
 {
-    while (handled_reqs_num == 0)
+    while (handled_reqs_num + queue_size > 0)
     {
         // fprintf(stderr, "master block until queue is empty. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
         pthread_cond_wait(&master_cond, &buf_lock);  // the master thread must block and wait until the queue is empty
@@ -275,7 +264,6 @@ void drop_random(struct Req req)
     {
         pop_index(rand() % curr_size);
         curr_size--;
-        // swap_reqs(rand_index, curr_size-1);
     }
     pthread_mutex_unlock(&buf_lock);
     push_buffer(req, drop_random);

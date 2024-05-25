@@ -130,7 +130,7 @@ int create_worker_threads(int argc, char *argv[])
   
   
   // pthread_t *threads = malloc((num_threads+10)*sizeof(pthread_t));
-  for (size_t i = 0; i < num_threads; i++)
+  for (size_t i = 0; i < num_threads && argv[i+4]; i++)
   {
       // pthread_create(&threads[i], NULL, worker_routine, argv);
       if (fork() == 0)

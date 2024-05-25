@@ -169,7 +169,7 @@ void requestServeStatic(int fd, char *filename, int filesize, struct timeval arr
 	sprintf(buf, "%sContent-Type: %s\r\n", buf, filetype);
 	sprintf(buf, "%sStat-Req-Arrival:: %lu.%06lu\r\n", buf, arrival.tv_sec, arrival.tv_usec);
 
-	sprintf(buf, "%sStat-Req-Dispatch:: %lu.%06lu\r\n", buf, dispatch.tv_sec, dispatch.tv_usec);
+	sprintf(buf, "%sStat-Req-Dispatch:: %lu.%06lu\r\n", buf, dispatch.tv_sec, dispatch.tv_usec); //same as in segel example
 
 	sprintf(buf, "%sStat-Thread-Id:: %d\r\n", buf, t_stats->id);
 
@@ -200,6 +200,7 @@ void requestHandle(int fd, struct timeval arrival, struct timeval dispatch, thre
 	Rio_readlineb(&rio, buf, MAXLINE);
 	sscanf(buf, "%s %s %s", method, uri, version);
 
+	printf("uriiiii\n");
 	printf("%s %s %s\n", method, uri, version);
 
 	if (strcasecmp(method, "GET")) {

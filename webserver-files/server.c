@@ -38,6 +38,22 @@ int queue_is_full()
     return ((queue_size + handled_reqs_num) >= max_queue_size);
 }
 
+void print_buffer_stats(int pop){
+    if (pop)
+    {
+        fprintf(stderr, "------------POP buffer. printing buffer:---------------\n buf_start: %d\n",buf_start);
+    }
+    else
+    {
+        fprintf(stderr, "------------PUSH buffer. printing buffer:---------------\n buf_start: %d\n",buf_start);
+    }
+    for (int i = 0; i < queue_size; i++)
+    {
+        fprintf(stderr, "buffer entry %u:\n address: %u\n",i, (unsigned int)(requests_buffer + buf_start + i));
+    }
+    fprintf(stderr, "buf_end: %u, buffer end address: %u\n",buf_end ,(unsigned int)(requests_buffer + buf_end));
+}
+
 //--------------------------------------------INIT----------------------------------------//
 
 void getargs(int *port, int *num_threads, int *max_q_size, char *sched_alg[], int argc, char *argv[])
@@ -76,6 +92,8 @@ void push_buffer(struct Req request, void (*sched_func)(struct Req))
 {
     // fprintf(stderr, "push buffer. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
     pthread_mutex_lock(&buf_lock);
+
+
     // fprintf(stderr, "push buffer. entered lock \n");
     if (queue_is_full())  // only add request if there is room in queue
     {
@@ -85,6 +103,9 @@ void push_buffer(struct Req request, void (*sched_func)(struct Req))
     requests_buffer[buf_end] = request; // push to cyclic queue
     buf_end = (buf_end + 1) % max_queue_size; // cyclic queue since we are removing the oldest request every time
     queue_size++;
+        
+        // print_buffer_stats(0);
+
     pthread_cond_signal(&buf_cond);
     pthread_mutex_unlock(&buf_lock);    
 }
@@ -94,16 +115,18 @@ struct Req pop_buffer()
     // fprintf(stderr, "worker. pop buffer. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
     struct Req req;
     struct timeval dispatch;
-    
+
     gettimeofday(&dispatch, NULL);
     req = requests_buffer[buf_start]; // remove from start of cyclic queue
     buf_start = (buf_start + 1) % max_queue_size; 
     queue_size--;
     handled_reqs_num++;
     
-    dispatch.tv_sec = dispatch.tv_sec - req.arrival_time.tv_sec;
-    dispatch.tv_usec = dispatch.tv_usec - req.arrival_time.tv_usec;
-    req.dispatch_time = dispatch;
+    req.dispatch_time.tv_sec = dispatch.tv_sec - req.arrival_time.tv_sec;
+    req.dispatch_time.tv_usec = dispatch.tv_usec - req.arrival_time.tv_usec;
+
+    // print_buffer_stats(1);
+
     return req;
 }
 
@@ -118,6 +141,7 @@ void pop_index(int index)
     requests_buffer[buf_start] = req_to_remove;
     
     req_to_remove = pop_buffer();
+    handled_reqs_num--;
     Close(req_to_remove.fd);
 }
 

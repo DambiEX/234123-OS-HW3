@@ -91,7 +91,6 @@ void init_buf_lock()
 void push_buffer(struct Req request, void (*sched_func)(struct Req))
 {
     // fprintf(stderr, "push buffer. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
-    pthread_mutex_lock(&buf_lock);
 
 
     // fprintf(stderr, "push buffer. entered lock \n");
@@ -249,8 +248,8 @@ void master_block_and_wait(struct Req req)
         // fprintf(stderr, "master block. queue size: %d, handled requests: %d,\n", queue_size,handled_reqs_num);
         pthread_cond_wait(&master_cond, &buf_lock);  // the master thread must block and wait if the queue is full
     }
+    push_buffer(req, master_block_and_wait);    
     pthread_mutex_unlock(&buf_lock);
-    push_buffer(req, master_block_and_wait);
 }
 
 void drop_tail(struct Req req)
@@ -261,10 +260,8 @@ void drop_tail(struct Req req)
 
 void drop_head(struct Req req)
 {
-    // pthread_mutex_unlock(&buf_lock); // note: unlock of unlocked mutex is undefined!
     struct Req old_req = pop_buffer();
     handled_reqs_num--; // needed because the popping increments it by 1. should be done while locked.
-    pthread_mutex_unlock(&buf_lock);
     Close(old_req.fd);
     push_buffer(req, drop_head);
 }
@@ -289,7 +286,6 @@ void drop_random(struct Req req)
         pop_index(rand() % curr_size);
         curr_size--;
     }
-    pthread_mutex_unlock(&buf_lock);
     push_buffer(req, drop_random);
 }
 
@@ -315,6 +311,7 @@ int main(int argc, char *argv[])
     struct timeval arrival;
     gettimeofday(&arrival, NULL);
     struct Req req = {connfd, arrival, arrival};
+    pthread_mutex_lock(&buf_lock);
     push_buffer(req, sched_func);
     }
     free (requests_buffer);

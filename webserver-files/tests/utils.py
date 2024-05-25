@@ -37,82 +37,82 @@ def validate_out(out: str, err: str, expected: str):
     return
     assert not err
     assert re.match(expected, out),\
-        f"\nExpected:\n{expected}"\
+        f"\nExpected1:\n{expected}"\
         f"\nGot:\n{out}"
 
 
 def validate_response(response: requests.models.Response, expected_headers: dict, expected: str):
     assert response.status_code == 200
     assert response.headers.keys() == expected_headers.keys(),\
-        f"\nExpected:\n{list(expected_headers.keys())}"\
+        f"\nExpected2:\n{list(expected_headers.keys())}"\
         f"\nGot:\n{list(response.headers.keys())}"
     for header, value in expected_headers.items():
         assert re.fullmatch(value, response.headers[header]),\
             f"\nHeader: {header}"\
-            f"\nExpected:\n{value}"\
+            f"\nExpected3:\n{value}"\
             f"\nGot:\n{response.headers[header]}"
     assert re.match(expected, response.text),\
-        f"\nExpected:\n{expected}"\
+        f"\nExpected4:\n{expected}"\
         f"\nGot:\n{response.text}"
 
 
 def validate_response_full(response: requests.models.Response, expected_headers: dict, expected: str):
     assert response.status_code == 200
     assert response.headers.keys() == expected_headers.keys(),\
-        f"\nExpected:\n{list(expected_headers.keys())}"\
+        f"\nExpected6:\n{list(expected_headers.keys())}"\
         f"\nGot:\n{list(response.headers.keys())}"
     for header, value in expected_headers.items():
         assert re.fullmatch(value, response.headers[header]),\
             f"\nHeader:\n{header}"\
-            f"\nExpected:\n{value}"\
+            f"\nExpected7:\n{value}"\
             f"\nGot:\n{response.headers[header]}"
     assert re.fullmatch(expected, response.text),\
-        f"\nExpected:\n{expected}"\
+        f"\nExpected8:\n{expected}"\
         f"\nGot:\n{response.text}"
 
 
 def validate_response_full_with_dispatch(response: requests.models.Response, expected_headers: dict, expected: str, dispatch: float):
     assert response.status_code == 200
     assert response.headers.keys() == expected_headers.keys(),\
-        f"\nExpected:\n{list(expected_headers.keys())}"\
+        f"\nExpected9:\n{list(expected_headers.keys())}"\
         f"\nGot:\n{list(response.headers.keys())}"
     for header, value in expected_headers.items():
         assert re.fullmatch(value, response.headers[header]),\
             f"\nHeader:\n{header}"\
-            f"\nExpected:\n{value}"\
+            f"\nExpected10:\n{value}"\
             f"\nGot:\n{response.headers[header]}"
     assert re.fullmatch(expected, response.text),\
-        f"\nExpected:\n{expected}"\
+        f"\nExpected11:\n{expected}"\
         f"\nGot:\n{response.text}"
     assert abs(float(response.headers['Stat-Req-Dispatch'][2:]) - dispatch) < 0.1,\
-        f"\nExpected:\n{dispatch}"\
+        f"\nExpected12:\n{dispatch}"\
         f"\nGot:\n{float(response.headers['Stat-Req-Dispatch'][2:])}"
 
 
 def validate_response_binary(response: requests.models.Response, expected_headers: dict, expected: str):
     assert response.status_code == 200
     assert response.headers.keys() == expected_headers.keys(),\
-        f"\nExpected:\n{list(expected_headers.keys())}"\
+        f"\nExpected13:\n{list(expected_headers.keys())}"\
         f"\nGot:\n{list(response.headers.keys())}"
     for header, value in expected_headers.items():
         assert re.fullmatch(value, response.headers[header]),\
             f"\nHeader:\n{header}"\
-            f"\nExpected:\n{value}"\
+            f"\nExpected14:\n{value}"\
             f"\nGot:\n{response.headers[header]}"
     assert response.content
 
 def validate_response_err(response: requests.models.Response, status: int, expected_headers: dict, expected: str):
     assert response.status_code == status
     assert response.headers.keys() == expected_headers.keys(),\
-        f"\nExpected:\n{list(expected_headers.keys())}"\
+        f"\nExpected15:\n{list(expected_headers.keys())}"\
         f"\nGot:\n{list(response.headers.keys())}"
     for header, value in expected_headers.items():
         assert re.fullmatch(value, response.headers[header]),\
             f"\nHeader:\n{header}"\
-            f"\nExpected:\n{value}"\
+            f"\nExpected16:\n{value}"\
             f"\nGot:\n{response.headers[header]}"
     assert re.fullmatch(expected, response.text),\
-        f"\nExpected:\n{expected}"\
+        f"\nExpected17:\n{expected}"\
         f"\nGot:\n{response.text}"
 
 

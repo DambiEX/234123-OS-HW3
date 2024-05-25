@@ -128,10 +128,15 @@ int create_worker_threads(int argc, char *argv[])
     num_threads = atoi(argv[4]);
   }
   
-  pthread_t *threads = malloc((num_threads+10)*sizeof(pthread_t));
+  
+  // pthread_t *threads = malloc((num_threads+10)*sizeof(pthread_t));
   for (size_t i = 0; i < num_threads; i++)
   {
-      pthread_create(&threads[i], NULL, worker_routine, argv);
+      // pthread_create(&threads[i], NULL, worker_routine, argv);
+      if (fork() == 0)
+      {
+        worker_routine(argv);
+      }
   }
   return 0;
 }
@@ -139,6 +144,5 @@ int create_worker_threads(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
   create_worker_threads(argc, argv);
-  sleep(30);
   pthread_exit(0);
 }

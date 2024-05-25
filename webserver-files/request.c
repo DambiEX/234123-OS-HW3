@@ -220,6 +220,7 @@ void requestHandle(int fd, struct timeval arrival, struct timeval dispatch, thre
 			return;
 		}
 		(t_stats->stat_req)++;
+		(t_stats->total_req)++;
 		requestServeStatic(fd, filename, sbuf.st_size, arrival, dispatch, t_stats);
 	} else {
 		if (!(S_ISREG(sbuf.st_mode)) || !(S_IXUSR & sbuf.st_mode)) {
@@ -227,6 +228,7 @@ void requestHandle(int fd, struct timeval arrival, struct timeval dispatch, thre
 			return;
 		}
 		(t_stats->dynm_req)++;
+		(t_stats->total_req)++;
 		requestServeDynamic(fd, filename, cgiargs, arrival, dispatch, t_stats);
 	}
 }

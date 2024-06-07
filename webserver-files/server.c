@@ -121,8 +121,7 @@ struct Req pop_buffer()
     queue_size--;
     handled_reqs_num++;
     
-    req.dispatch_time.tv_sec = dispatch.tv_sec - req.arrival_time.tv_sec;
-    req.dispatch_time.tv_usec = dispatch.tv_usec - req.arrival_time.tv_usec;
+    timersub(&dispatch, &req.arrival_time, &req.dispatch_time);
 
     // print_buffer_stats(1);
 
@@ -279,6 +278,7 @@ void block_flush(struct Req req)
 
 void drop_random(struct Req req)
 {
+    srand(time(NULL));
     int half_size = (handled_reqs_num % 2 == 0) ? handled_reqs_num/2 : handled_reqs_num/2 + 1;
     int curr_size = handled_reqs_num;
     while (curr_size > half_size)
